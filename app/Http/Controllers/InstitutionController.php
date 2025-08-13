@@ -4,23 +4,22 @@ namespace App\Http\Controllers;
 
 use App\Models\Institution;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class InstitutionController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
-    }
+        $query = Institution::query();
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
+        if($request->search){
+            $query->search($request->search);
+        }
+
+        return $query->paginate(10);
     }
 
     /**
@@ -28,7 +27,22 @@ class InstitutionController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'code' => 'required|string|max:50|unique:institutions',
+            'description' => 'nullable|string',
+            'address' => 'nullable|string',
+            'phone' => 'nullable|string',
+            'email' => 'nullable|email|unique:institutions',
+            'website' => 'nullable|url',
+            'timezone' => 'nullable|string',
+            'settings' => 'nullable|array',
+            'is_active' => 'boolean'
+        ]);
+
+        $data['slug'] = Str::slug($data['code']);
+        
+        return Institution::create($data);
     }
 
     /**
@@ -36,15 +50,7 @@ class InstitutionController extends Controller
      */
     public function show(Institution $institution)
     {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Institution $institution)
-    {
-        //
+        return $institution;
     }
 
     /**
@@ -52,7 +58,26 @@ class InstitutionController extends Controller
      */
     public function update(Request $request, Institution $institution)
     {
-        //
+        $data = $request->validate([
+            'name' => 'sometimes|required|string|max:255',
+            'code' => 'sometimes|required|string|max:50|unique:institutions,code,' . $institution->id,
+            'description' => 'nullable|string',
+            'address' => 'nullable|string',
+            'phone' => 'nullable|string',
+            'email' => 'nullable|email|unique:institutions,email,' . $institution->id,
+            'website' => 'nullable|url',
+            'timezone' => 'nullable|string',
+            'settings' => 'nullable|array',
+            'is_active' => 'boolean'
+        ]);
+
+        if (isset($data['code'])) {
+            $data['slug'] = Str::slug($data['code']);
+        }
+        
+        $institution->update($data);
+        
+        return $institution;
     }
 
     /**
@@ -60,6 +85,7 @@ class InstitutionController extends Controller
      */
     public function destroy(Institution $institution)
     {
-        //
+        $institution->delete();
+        return response()->json(['message' => 'Institution supprimée']);
     }
 }

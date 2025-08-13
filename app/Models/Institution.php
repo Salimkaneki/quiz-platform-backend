@@ -1,55 +1,72 @@
 <?php
-// app/Models/Institution.php
-
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Institution extends Model
 {
-    use HasFactory;
+    
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'name',
         'code',
+        'slug',
         'description',
         'address',
         'phone',
         'email',
+        'website',
+        'timezone',
         'settings',
-        'is_active',
+        'is_active'
     ];
 
     protected $casts = [
         'settings' => 'array',
         'is_active' => 'boolean',
+        'deleted_at' => 'datetime'
     ];
 
-    // Relations
+    // Relation optimisée avec les utilisateurs
     public function users()
     {
-        return $this->hasMany(User::class);
+        return $this->hasMany(User::class)->withTrashed();
     }
 
-    public function teachers()
+    public function activeUsers()
     {
-        return $this->hasMany(User::class)->where('role', 'teacher');
+        return $this->users()->where('is_active', true);
     }
 
-    public function admins()
+    // Nouvelle relation avec les paramètres système
+    public function systemSettings()
     {
-        return $this->hasMany(User::class)->where('role', 'admin');
+        return $this->hasOne(InstitutionSetting::class);
     }
 
-    public function formations()
+    // Scope pour recherche avancée
+    public function scopeSearch($query, $term)
     {
-        return $this->hasMany(Formation::class);
+        return $query->where('name', 'like', "%$term%")
+                    ->orWhere('code', 'like', "%$term%");
     }
 
-    // Scopes
-    public function scopeActive($query)
+    // Méthode helper pour les paramètres
+    public function getSetting($key, $default = null)
     {
-        return $query->where('is_active', true);
+        return data_get($this->settings, $key, $default);
+    }
+
+    // Générateur de slug
+    public static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($institution) {
+            $institution->slug = Str::slug($institution->code);
+        });
     }
 }

@@ -6,9 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
@@ -17,18 +14,16 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->enum('role', ['admin', 'teacher'])->default('teacher');
-            $table->foreignId('institution_id')->constrained()->cascadeOnDelete();
+            $table->enum('account_type', ['admin', 'teacher', 'student']); // Remplace 'role'
             $table->boolean('is_active')->default(true);
-            $table->json('permissions')->nullable(); // Permissions spécifiques
             $table->rememberToken();
             $table->timestamps();
 
-
-            $table->index(['institution_id', 'role']);
-
+            // Suppression de la relation directe avec institution
+            // L'institution sera gérée via les tables teachers/administrators
         });
 
+        // Tables d'authentification gardées telles quelles
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
             $table->string('token');
@@ -45,9 +40,6 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('users');

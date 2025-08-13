@@ -6,17 +6,14 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('teacher_subject', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('teacher_id')->constrained('users')->cascadeOnDelete();
+            $table->foreignId('teacher_id')->constrained('teachers')->cascadeOnDelete(); // Changé vers la table teachers
             $table->foreignId('subject_id')->constrained()->cascadeOnDelete();
             $table->foreignId('classe_id')->nullable()->constrained()->cascadeOnDelete();
-            $table->string('academic_year'); // Ex: "2024-2025"
+            $table->string('academic_year');
             $table->boolean('is_active')->default(true);
             $table->timestamps();
             
@@ -25,9 +22,6 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('teacher_subject');
