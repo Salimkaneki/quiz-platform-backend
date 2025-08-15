@@ -61,3 +61,15 @@ Route::prefix('teachers')->group(function () {
     Route::get('/grade/{grade}', [TeacherController::class, 'byGrade'])->name('teachers.by_grade');
     Route::get('/my-institution', [TeacherController::class, 'myInstitutionTeachers'])->name('teachers.my_institution');
 });
+
+use App\Http\Controllers\Admin\AdminAuthController;
+
+Route::prefix('admin')->group(function () {
+    Route::post('login', [AdminAuthController::class, 'login']);
+
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('logout', [AdminAuthController::class, 'logout']);
+        Route::get('me', [AdminAuthController::class, 'me']); // <--- nouvelle route
+
+    });
+});
