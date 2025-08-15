@@ -14,13 +14,12 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->enum('account_type', ['admin', 'teacher', 'student']); // Remplace 'role'
+            $table->enum('account_type', ['admin', 'teacher', 'student']);
+            $table->boolean('is_super_admin')->default(false);
             $table->boolean('is_active')->default(true);
             $table->rememberToken();
             $table->timestamps();
 
-            // Suppression de la relation directe avec institution
-            // L'institution sera gérée via les tables teachers/administrators
         });
 
         // Tables d'authentification gardées telles quelles

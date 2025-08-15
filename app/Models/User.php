@@ -2,106 +2,99 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
         'name',
         'email',
         'password',
-        'role',
-        'is_active',
         'account_type',
-        'permissions',
+        'is_super_admin',
+        'phone',
+        'address',
+        'is_active'
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+        'is_active' => 'boolean'
+    ];
+
     /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
+     * Relations
      */
-    protected function casts(): array
+    public function superAdmin(): HasOne
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-            'permissions'=>'array',
-            'is_active' => 'boolean',
-        ];
+        return $this->hasOne(SuperAdmin::class);
     }
 
-  // Relations
-    public function institution()
+    public function administrators(): HasMany
     {
-        return $this->belongsTo(Institution::class);
+        return $this->hasMany(Administrator::class);
     }
 
-    // Matières enseignées (Many-to-Many)
-    public function subjects()
+    public function teachers(): HasMany
     {
-        return $this->belongsToMany(Subject::class, 'teacher_subject')
-                    ->withPivot('classe_id', 'academic_year', 'is_active')
-                    ->withTimestamps();
+        return $this->hasMany(Teacher::class);
     }
 
-    // Quiz créés par cet enseignant
-    public function quizzes()
+    /**
+     * Vérifications de rôles
+     */
+    public function isSuperAdmin(): bool
     {
-        return $this->hasMany(Quiz::class, 'teacher_id');
+        return (
+            (method_exists($this, 'superAdmin') && $this->superAdmin()->where('is_active', true)->exists())
+            || ($this->account_type === 'admin' && $this->is_super_admin)
+        );
     }
 
-    // Sessions de quiz lancées
-    public function quizSessions()
+
+    public function isAdmin(): bool
     {
-        return $this->hasMany(QuizSession::class, 'teacher_id');
+        return $this->account_type === 'admin';
     }
 
-    // Scopes utiles
-    public function scopeTeachers($query)
+    public function isTeacher(): bool
     {
-        return $query->where('role', 'teacher');
+        return $this->account_type === 'teacher';
     }
 
-    public function scopeAdmins($query)
+    public function isStudent(): bool
     {
-        return $query->where('role', 'admin');
+        return $this->account_type === 'student';
     }
 
+    /**
+     * Scopes
+     */
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
     }
 
-    // Helper methods
-    public function isAdmin()
+    // Scope pour les super admins
+    public function scopeSuperAdmins($query)
     {
-        return $this->role === 'admin';
+        return $query->where('account_type', 'admin')->where('is_super_admin', true);
     }
 
-    public function isTeacher()
+    public function scopeByAccountType($query, $type)
     {
-        return $this->role === 'teacher';
+        return $query->where('account_type', $type);
     }
 }
