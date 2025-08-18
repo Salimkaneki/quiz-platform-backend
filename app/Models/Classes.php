@@ -1,5 +1,5 @@
 <?php
-// app/Models/Classe.php
+// app/Models/Classes.php
 
 namespace App\Models;
 
@@ -31,9 +31,10 @@ class Classes extends Model
         return $this->belongsTo(Formation::class);
     }
 
+    // CORRECTION: Spécifier la bonne clé étrangère
     public function students()
     {
-        return $this->hasMany(Student::class);
+        return $this->hasMany(Student::class, 'class_id');
     }
 
     // Enseignants via la table pivot teacher_subject
@@ -55,7 +56,7 @@ class Classes extends Model
     // Étudiants actifs
     public function activeStudents()
     {
-        return $this->hasMany(Student::class)->where('is_active', true);
+        return $this->hasMany(Student::class, 'class_id')->where('is_active', true);
     }
 
     // Scopes

@@ -83,3 +83,40 @@ Route::prefix('admin')->middleware('auth:sanctum')->group(function () {
     Route::delete('teachers/{teacher}', [TeacherController::class, 'destroy']);
 });
 
+use App\Http\Controllers\Admin\FormationController;
+
+Route::prefix('admin')->middleware('auth:sanctum')->group(function () {
+    
+    // Formations CRUD
+    Route::get('formations', [FormationController::class, 'index']);        // Liste des formations
+    Route::post('formations', [FormationController::class, 'store']);       // Création
+    Route::get('formations/{formation}', [FormationController::class, 'show']); // Détails
+    Route::put('formations/{formation}', [FormationController::class, 'update']); // Mise à jour
+    Route::delete('formations/{formation}', [FormationController::class, 'destroy']); // Suppression
+
+});
+
+
+use App\Http\Controllers\Admin\SubjectController;
+
+Route::prefix('admin')->middleware('auth:sanctum')->group(function () {
+    Route::get('subjects', [SubjectController::class, 'index']);      // Liste + filtres
+    Route::post('subjects', [SubjectController::class, 'store']);     // Création
+    Route::get('subjects/{subject}', [SubjectController::class, 'show']);  // Détail
+    Route::put('subjects/{subject}', [SubjectController::class, 'update']); // Mise à jour
+    Route::delete('subjects/{subject}', [SubjectController::class, 'destroy']); // Suppression
+});
+
+
+
+
+use App\Http\Controllers\Admin\ClasseController;
+
+Route::prefix('admin')->middleware('auth:sanctum')->group(function () {
+    Route::get('classes', [ClasseController::class, 'index']);
+    Route::post('classes', [ClasseController::class, 'store']);
+    Route::get('classes/{classe}', [ClasseController::class, 'show']);
+    Route::put('classes/{classe}', [ClasseController::class, 'update']);
+    Route::patch('classes/{classe}', [ClasseController::class, 'update']);
+    Route::delete('classes/{classe}', [ClasseController::class, 'destroy']);
+});

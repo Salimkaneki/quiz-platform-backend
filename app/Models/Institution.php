@@ -3,6 +3,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Institution extends Model
@@ -39,6 +41,11 @@ class Institution extends Model
     public function activeUsers()
     {
         return $this->users()->where('is_active', true);
+    }
+
+        public function formations(): HasMany
+    {
+        return $this->hasMany(Formation::class);
     }
 
     // Nouvelle relation avec les paramètres système
