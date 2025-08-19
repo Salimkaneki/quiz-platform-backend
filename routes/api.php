@@ -120,3 +120,13 @@ Route::prefix('admin')->middleware('auth:sanctum')->group(function () {
     Route::patch('classes/{classe}', [ClasseController::class, 'update']);
     Route::delete('classes/{classe}', [ClasseController::class, 'destroy']);
 });
+
+use App\Http\Controllers\Admin\StudentController;
+
+Route::prefix('admin')->middleware(['auth:sanctum'])->group(function () {
+    Route::get('students', [StudentController::class, 'index']);
+    Route::post('students', [StudentController::class, 'store']);
+    Route::get('students/{student}', [StudentController::class, 'show']);
+    Route::put('students/{student}', [StudentController::class, 'update']);
+    Route::delete('students/{student}', [StudentController::class, 'destroy']);
+});

@@ -1,5 +1,4 @@
 <?php
-// app/Models/Student.php
 
 namespace App\Models;
 
@@ -17,7 +16,8 @@ class Student extends Model
         'email',
         'birth_date',
         'phone',
-        'classe_id',
+        'class_id',
+        'institution_id', // Ajout important
         'is_active',
         'metadata',
     ];
@@ -31,17 +31,12 @@ class Student extends Model
     // Relations
     public function classe()
     {
-        return $this->belongsTo(Classe::class);
+        return $this->belongsTo(Classes::class, 'class_id');
     }
 
-    public function responses()
+    public function institution()
     {
-        return $this->hasMany(StudentResponse::class);
-    }
-
-    public function results()
-    {
-        return $this->hasMany(Result::class);
+        return $this->belongsTo(Institution::class);
     }
 
     // Scopes
@@ -50,19 +45,14 @@ class Student extends Model
         return $query->where('is_active', true);
     }
 
-    public function scopeByStudentNumber($query, $number)
+    public function scopeByInstitution($query, $institutionId)
     {
-        return $query->where('student_number', $number);
+        return $query->where('institution_id', $institutionId);
     }
 
-    // Helper methods
+    // Accesseurs
     public function getFullNameAttribute()
     {
         return $this->first_name . ' ' . $this->last_name;
-    }
-
-    public function getFormationAttribute()
-    {
-        return $this->classe->formation ?? null;
     }
 }
