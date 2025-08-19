@@ -10,9 +10,9 @@ return new class extends Migration
     {
         Schema::create('teacher_subject', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('teacher_id')->constrained('teachers')->cascadeOnDelete(); // Changé vers la table teachers
-            $table->foreignId('subject_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('classe_id')->nullable()->constrained()->cascadeOnDelete();
+            $table->foreignId('teacher_id')->constrained('teachers')->cascadeOnDelete();
+            $table->foreignId('subject_id')->constrained('subjects')->cascadeOnDelete(); // Spécifier 'subjects'
+            $table->foreignId('classe_id')->nullable()->constrained('classes')->cascadeOnDelete(); // Spécifier 'classes'
             $table->string('academic_year');
             $table->boolean('is_active')->default(true);
             $table->timestamps();
