@@ -143,6 +143,13 @@ Route::prefix('admin')->middleware('auth:sanctum')->group(function () {
     Route::delete('teacher-subjects/{teacherSubject}', [TeacherSubjectController::class, 'destroy']);
 });
 
+use App\Http\Controllers\Admin\StudentImportController;
+
+Route::prefix('admin')->middleware('auth:sanctum')->group(function () {
+    Route::post('students/import', [StudentImportController::class, 'import']);
+});
+
+
 // =================== ROUTES ALTERNATIVES (Plus RESTful) ===================
 
 /*
