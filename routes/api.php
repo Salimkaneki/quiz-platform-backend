@@ -149,6 +149,16 @@ Route::prefix('admin')->middleware('auth:sanctum')->group(function () {
     Route::post('students/import', [StudentImportController::class, 'import']);
 });
 
+use App\Http\Controllers\Auth\TeacherAuthController;
+
+Route::prefix('teacher')->group(function () {
+    Route::post('login', [TeacherAuthController::class, 'login']); // POST obligatoire
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::get('me', [TeacherAuthController::class, 'me']);
+        Route::post('logout', [TeacherAuthController::class, 'logout']);
+    });
+});
+
 
 // =================== ROUTES ALTERNATIVES (Plus RESTful) ===================
 

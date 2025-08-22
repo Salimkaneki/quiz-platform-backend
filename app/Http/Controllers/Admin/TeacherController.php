@@ -40,12 +40,23 @@ class TeacherController extends Controller
         }
 
         $data = $request->validate([
-            'user_id' => 'required|exists:users,id',
+            'user_id'        => 'required|exists:users,id',
             'specialization' => 'required|string|max:255',
-            'grade' => 'required|in:vacataire,certifié,agrégé,maître_de_conférences,professeur',
-            'is_permanent' => 'boolean',
-            'metadata' => 'nullable|array'
+            'grade'          => 'required|in:vacataire,certifié,agrégé,maître_de_conférences,professeur',
+            'is_permanent'   => 'boolean',
+            'metadata'       => 'nullable|array'
         ]);
+
+        // Vérifier que le user est bien un enseignant
+        $user = \App\Models\User::find($data['user_id']);
+        if ($user->account_type !== 'teacher') {
+            return response()->json(['message' => 'Le compte choisi n’est pas de type enseignant'], 422);
+        }
+
+        // Vérifier qu’il n’est pas déjà enregistré comme enseignant
+        if (Teacher::where('user_id', $data['user_id'])->exists()) {
+            return response()->json(['message' => 'Cet utilisateur est déjà enregistré comme enseignant'], 422);
+        }
 
         $data['institution_id'] = $admin->institution_id;
         $teacher = Teacher::create($data);
@@ -72,12 +83,14 @@ class TeacherController extends Controller
 
         $data = $request->validate([
             'specialization' => 'sometimes|required|string|max:255',
-            'grade' => 'sometimes|required|in:vacataire,certifié,agrégé,maître_de_conférences,professeur',
-            'is_permanent' => 'boolean',
-            'metadata' => 'nullable|array'
+            'grade'          => 'sometimes|required|in:vacataire,certifié,agrégé,maître_de_conférences,professeur',
+            'is_permanent'   => 'boolean',
+            'metadata'       => 'nullable|array'
         ]);
 
+        // ⚠️ user_id non modifiable pour éviter des incohérences
         $teacher->update($data);
+
         return $teacher->load(['user', 'institution']);
     }
 

@@ -28,7 +28,6 @@ return new class extends Migration
             
             $table->index(['teacher_id', 'status']);
             $table->index(['subject_id', 'status']);
-
         });
     }
 

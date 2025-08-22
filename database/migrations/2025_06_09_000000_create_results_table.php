@@ -14,7 +14,12 @@ return new class extends Migration
         Schema::create('results', function (Blueprint $table) {
             $table->id();
             $table->foreignId('quiz_session_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('student_id')->constrained()->cascadeOnDelete();
+               
+            $table->unique(['quiz_session_id', 'student_id']);
+            $table->index(['student_id', 'status']);
+            $table->index(['quiz_session_id', 'percentage']);
+        });
+         $table->foreignId('student_id')->constrained()->cascadeOnDelete();
             $table->decimal('total_points', 8, 2);
             $table->decimal('max_points', 8, 2);
             $table->decimal('percentage', 5, 2); // Pourcentage
@@ -30,11 +35,6 @@ return new class extends Migration
             $table->json('detailed_stats')->nullable(); // Stats détaillées
             $table->text('teacher_feedback')->nullable();
             $table->timestamps();
-            
-            $table->unique(['quiz_session_id', 'student_id']);
-            $table->index(['student_id', 'status']);
-            $table->index(['quiz_session_id', 'percentage']);
-        });
     }
 
     /**

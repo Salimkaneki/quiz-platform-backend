@@ -99,4 +99,9 @@ class User extends Authenticatable
     {
         return $query->where('account_type', $type);
     }
+
+    public function teacher(): HasOne
+    {
+        return $this->hasOne(Teacher::class);
+    }
 }

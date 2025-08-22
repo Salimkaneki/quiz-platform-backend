@@ -79,4 +79,6 @@ class UserController extends Controller
 
         return User::where('account_type', $accountType)->paginate(15);
     }
+
+
 }
