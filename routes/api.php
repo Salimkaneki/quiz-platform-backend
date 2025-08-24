@@ -159,22 +159,19 @@ Route::prefix('teacher')->group(function () {
     });
 });
 
+// use App\Http\Controllers\Teacher\Quiz\QuizController;
 
-// =================== ROUTES ALTERNATIVES (Plus RESTful) ===================
-
-/*
-// Si vous voulez une approche plus RESTful, vous pouvez utiliser :
-
-Route::apiResource('institutions', InstitutionController::class);
-Route::apiResource('users', UserController::class);
-Route::apiResource('administrators', AdministratorController::class);
-Route::apiResource('teachers', TeacherController::class);
-
-Route::prefix('admin')->middleware('auth:sanctum')->group(function () {
-    Route::apiResource('teachers', TeacherController::class);
-    Route::apiResource('formations', FormationController::class);
-    Route::apiResource('subjects', SubjectController::class);
-    Route::apiResource('classes', ClasseController::class, ['parameters' => ['classes' => 'classe']]);
-    Route::apiResource('students', StudentController::class);
+Route::prefix('teacher')->middleware('auth:sanctum')->group(function () {
+    // Routes quizzes
+    Route::apiResource('quizzes', QuizController::class);
+    
+    // Routes questions
+    Route::prefix('quizzes/{quizId}')->group(function () {
+        Route::get('questions', [QuestionController::class, 'index']);
+        Route::get('questions/{questionId}', [QuestionController::class, 'show']);
+        Route::post('questions', [QuestionController::class, 'store']);
+        Route::post('questions/batch', [QuestionController::class, 'batchStore']);
+        Route::put('questions/{questionId}', [QuestionController::class, 'update']);
+        Route::delete('questions/{questionId}', [QuestionController::class, 'destroy']);
+    });
 });
-*/

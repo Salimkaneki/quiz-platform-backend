@@ -1,10 +1,11 @@
 <?php
-// app/Models/Quiz.php
 
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Quiz extends Model
 {
@@ -31,34 +32,37 @@ class Quiz extends Model
         'settings' => 'array',
     ];
 
-    // Relations
-    public function subject()
+    /**
+     * Relations
+     */
+    public function subject(): BelongsTo
     {
         return $this->belongsTo(Subject::class);
     }
 
-    public function teacher()
+    public function teacher(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'teacher_id');
+        return $this->belongsTo(Teacher::class, 'teacher_id');
     }
 
-    public function questions()
+    public function questions(): HasMany
     {
         return $this->hasMany(Question::class)->orderBy('order');
     }
 
-    public function sessions()
+    public function sessions(): HasMany
     {
         return $this->hasMany(QuizSession::class);
     }
 
-    // Sessions actives
-    public function activeSessions()
+    public function activeSessions(): HasMany
     {
         return $this->hasMany(QuizSession::class)->where('status', 'active');
     }
 
-    // Scopes
+    /**
+     * Scopes
+     */
     public function scopePublished($query)
     {
         return $query->where('status', 'published');
@@ -69,18 +73,28 @@ class Quiz extends Model
         return $query->where('teacher_id', $teacherId);
     }
 
-    // Helper methods
-    public function isPublished()
+    // NOUVEAU : Scope pour chercher par user_id du teacher
+    public function scopeByTeacherUser($query, $userId)
+    {
+        return $query->whereHas('teacher', function($q) use ($userId) {
+            $q->where('user_id', $userId);
+        });
+    }
+
+    /**
+     * Helpers
+     */
+    public function isPublished(): bool
     {
         return $this->status === 'published';
     }
 
-    public function isDraft()
+    public function isDraft(): bool
     {
         return $this->status === 'draft';
     }
 
-    public function getTotalQuestionsAttribute()
+    public function getTotalQuestionsAttribute(): int
     {
         return $this->questions()->count();
     }

@@ -35,10 +35,10 @@ class Teacher extends Model
     }
 
     // Si vous avez des quiz plus tard
-    // public function quizzes(): HasMany
-    // {
-    //     return $this->hasMany(Quiz::class);
-    // }
+    public function quizzes(): HasMany
+    {
+        return $this->hasMany(Quiz::class);
+    }
 
     // Scopes
     public function scopePermanent($query)
