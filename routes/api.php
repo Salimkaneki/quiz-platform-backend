@@ -13,6 +13,9 @@ use App\Http\Controllers\Admin\FormationController;
 use App\Http\Controllers\Admin\SubjectController;
 use App\Http\Controllers\Admin\ClasseController;
 use App\Http\Controllers\Admin\StudentController;
+use App\Http\Controllers\Teacher\QuizSessionController;
+use App\Http\Controllers\Teacher\Quiz\QuizController;
+use App\Http\Controllers\Teacher\Quiz\QuestionController;
 
 // =================== ROUTES PUBLIQUES ===================
 
@@ -159,11 +162,27 @@ Route::prefix('teacher')->group(function () {
     });
 });
 
-// use App\Http\Controllers\Teacher\Quiz\QuizController;
+
 
 Route::prefix('teacher')->middleware('auth:sanctum')->group(function () {
     // Routes quizzes
     Route::apiResource('quizzes', QuizController::class);
+
+    // Sessions de quiz (AJOUTEZ ICI)
+    Route::get('/sessions', [QuizSessionController::class, 'index']);
+    Route::post('/sessions', [QuizSessionController::class, 'store']);
+    Route::get('/sessions/{id}', [QuizSessionController::class, 'show']);
+    Route::put('/sessions/{id}', [QuizSessionController::class, 'update']);
+    Route::patch('/sessions/{id}/activate', [QuizSessionController::class, 'activate']);
+    Route::patch('/sessions/{id}/complete', [QuizSessionController::class, 'complete']);
+    Route::patch('/sessions/{id}/pause', [QuizSessionController::class, 'pause']);
+    Route::patch('/sessions/{id}/resume', [QuizSessionController::class, 'resume']);  
+    Route::patch('/sessions/{id}/cancel', [QuizSessionController::class, 'cancel']);
+    Route::get('/sessions/duplicates', [QuizSessionController::class, 'detectDuplicates']);
+    Route::post('/sessions/clean-duplicates', [QuizSessionController::class, 'cleanDuplicates']);
+
+
+    
     
     // Routes questions
     Route::prefix('quizzes/{quizId}')->group(function () {
@@ -175,3 +194,5 @@ Route::prefix('teacher')->middleware('auth:sanctum')->group(function () {
         Route::delete('questions/{questionId}', [QuestionController::class, 'destroy']);
     });
 });
+
+

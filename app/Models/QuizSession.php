@@ -1,5 +1,4 @@
 <?php
-// app/Models/QuizSession.php
 
 namespace App\Models;
 
@@ -19,9 +18,12 @@ class QuizSession extends Model
         'starts_at',
         'ends_at',
         'status',
+        'access_type',         // <-- NEW
         'allowed_students',
         'max_participants',
         'require_student_list',
+        'duration_override',   // <-- NEW
+        'attempts_allowed',    // <-- NEW
         'settings',
         'activated_at',
         'completed_at',
