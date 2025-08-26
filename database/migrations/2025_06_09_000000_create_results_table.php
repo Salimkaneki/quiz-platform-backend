@@ -13,13 +13,12 @@ return new class extends Migration
     {
         Schema::create('results', function (Blueprint $table) {
             $table->id();
+            
+            // Clés étrangères
             $table->foreignId('quiz_session_id')->constrained()->cascadeOnDelete();
-               
-            $table->unique(['quiz_session_id', 'student_id']);
-            $table->index(['student_id', 'status']);
-            $table->index(['quiz_session_id', 'percentage']);
-        });
-         $table->foreignId('student_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('student_id')->constrained()->cascadeOnDelete();
+            
+            // Données du résultat
             $table->decimal('total_points', 8, 2);
             $table->decimal('max_points', 8, 2);
             $table->decimal('percentage', 5, 2); // Pourcentage
@@ -28,13 +27,26 @@ return new class extends Migration
             $table->integer('total_questions');
             $table->integer('correct_answers');
             $table->integer('time_spent_total')->nullable(); // Temps total en secondes
+            
+            // Timestamps spécialisés
             $table->timestamp('started_at');
             $table->timestamp('submitted_at')->nullable();
             $table->timestamp('graded_at')->nullable();
             $table->timestamp('published_at')->nullable(); // Quand visible par l'étudiant
+            
+            // Données supplémentaires
             $table->json('detailed_stats')->nullable(); // Stats détaillées
             $table->text('teacher_feedback')->nullable();
+            
             $table->timestamps();
+            
+            // Contraintes (APRÈS toutes les colonnes)
+            $table->unique(['quiz_session_id', 'student_id'], 'unique_student_quiz_session');
+            
+            // Index pour les performances
+            $table->index(['student_id', 'status']);
+            $table->index(['quiz_session_id', 'percentage']);
+        });
     }
 
     /**

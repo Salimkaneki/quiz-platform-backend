@@ -28,6 +28,9 @@ return new class extends Migration
             
             $table->index(['teacher_id', 'status']);
             $table->index(['subject_id', 'status']);
+
+            $table->unique(['teacher_id', 'title', 'subject_id']);
+
         });
     }
 

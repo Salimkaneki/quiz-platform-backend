@@ -91,9 +91,9 @@ class AdministratorController extends Controller
         // $this->requiresAdminAccess();
         
         $administrators = Administrator::byInstitution($institutionId)
-                                     ->with(['user', 'institution'])
-                                     ->get();
-        
+             ->with(['user', 'institution'])
+             ->get();
+            
         return response()->json($administrators);
     }
 
@@ -108,8 +108,8 @@ class AdministratorController extends Controller
         }
         
         $administrators = Administrator::byType($type)
-                                     ->with(['user', 'institution'])
-                                     ->paginate(15);
+             ->with(['user', 'institution'])
+             ->paginate(15);
         
         return $administrators;
     }
