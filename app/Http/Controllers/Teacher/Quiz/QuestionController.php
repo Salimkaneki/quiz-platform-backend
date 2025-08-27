@@ -54,6 +54,39 @@ class QuestionController extends Controller
             'metadata' => 'nullable|array',
         ]);
 
+        // Vérifier doublon
+        $existingQuestion = $quiz->questions()
+            ->where('question_text', $validated['question_text'])
+            ->first();
+
+        if ($existingQuestion) {
+            return response()->json([
+                'status' => 409,
+                'error' => 'Une question identique existe déjà dans ce quiz.'
+            ], 409);
+        }
+
+        // Validation spécifique selon type
+        if ($validated['type'] === 'multiple_choice') {
+            $options = $validated['options'] ?? [];
+            if (!collect($options)->contains(fn($o) => isset($o['is_correct']) && $o['is_correct'])) {
+                return response()->json([
+                    'status' => 422,
+                    'error' => 'Au moins une option correcte doit être définie pour un QCM.'
+                ], 422);
+            }
+        }
+
+        if ($validated['type'] === 'true_false') {
+            $correct = strtolower($validated['correct_answer'] ?? '');
+            if (!in_array($correct, ['true','false'])) {
+                return response()->json([
+                    'status' => 422,
+                    'error' => 'La réponse correcte pour true/false doit être "true" ou "false".'
+                ], 422);
+            }
+        }
+
         $question = $quiz->questions()->create($validated);
 
         return response()->json($question, 201);
@@ -82,6 +115,28 @@ class QuestionController extends Controller
         $createdQuestions = [];
 
         foreach ($validated['questions'] as $questionData) {
+            // Vérifier doublon
+            $existingQuestion = $quiz->questions()
+                ->where('question_text', $questionData['question_text'])
+                ->first();
+            if ($existingQuestion) {
+                continue; // Ignorer doublon dans le batch
+            }
+
+            // Validation spécifique pour QCM et True/False
+            if ($questionData['type'] === 'multiple_choice') {
+                $options = $questionData['options'] ?? [];
+                if (!collect($options)->contains(fn($o) => isset($o['is_correct']) && $o['is_correct'])) {
+                    continue; // Ignorer si pas d'option correcte
+                }
+            }
+            if ($questionData['type'] === 'true_false') {
+                $correct = strtolower($questionData['correct_answer'] ?? '');
+                if (!in_array($correct, ['true','false'])) {
+                    continue; // Ignorer si mauvaise valeur
+                }
+            }
+
             $createdQuestions[] = $quiz->questions()->create($questionData);
         }
 
@@ -110,6 +165,41 @@ class QuestionController extends Controller
             'time_limit' => 'nullable|integer',
             'metadata' => 'nullable|array',
         ]);
+
+        // Vérifier doublon si le texte est modifié
+        if (isset($validated['question_text'])) {
+            $existingQuestion = $quiz->questions()
+                ->where('question_text', $validated['question_text'])
+                ->where('id', '<>', $question->id)
+                ->first();
+            if ($existingQuestion) {
+                return response()->json([
+                    'status' => 409,
+                    'error' => 'Une question identique existe déjà dans ce quiz.'
+                ], 409);
+            }
+        }
+
+        // Validation type spécifique
+        $type = $validated['type'] ?? $question->type;
+        if ($type === 'multiple_choice') {
+            $options = $validated['options'] ?? $question->options ?? [];
+            if (!collect($options)->contains(fn($o) => isset($o['is_correct']) && $o['is_correct'])) {
+                return response()->json([
+                    'status' => 422,
+                    'error' => 'Au moins une option correcte doit être définie pour un QCM.'
+                ], 422);
+            }
+        }
+        if ($type === 'true_false') {
+            $correct = strtolower($validated['correct_answer'] ?? $question->correct_answer ?? '');
+            if (!in_array($correct, ['true','false'])) {
+                return response()->json([
+                    'status' => 422,
+                    'error' => 'La réponse correcte pour true/false doit être "true" ou "false".'
+                ], 422);
+            }
+        }
 
         $question->update($validated);
 
