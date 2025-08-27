@@ -31,6 +31,12 @@ class Classes extends Model
         return $this->belongsTo(Formation::class);
     }
 
+    public function institution()
+    {
+        return $this->belongsTo(Institution::class);
+    }
+
+
     // CORRECTION: Spécifier la bonne clé étrangère
     public function students()
     {
@@ -86,8 +92,14 @@ class Classes extends Model
         return $this->student_count < $this->max_students;
     }
 
+    // public function getFullNameAttribute()
+    // {
+    //     return $this->formation->code . ' - ' . $this->name . ' (' . $this->academic_year . ')';
+    // }
+
     public function getFullNameAttribute()
     {
-        return $this->formation->code . ' - ' . $this->name . ' (' . $this->academic_year . ')';
+        return optional($this->formation)->code . ' - ' . $this->name . ' (' . $this->academic_year . ')';
     }
+
 }

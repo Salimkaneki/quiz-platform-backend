@@ -34,6 +34,9 @@ class Student extends Model
         return $this->belongsTo(Classes::class, 'class_id');
     }
 
+
+
+
     public function institution()
     {
         return $this->belongsTo(Institution::class);
@@ -54,5 +57,10 @@ class Student extends Model
     public function getFullNameAttribute()
     {
         return $this->first_name . ' ' . $this->last_name;
+    }
+
+    public function teachers()
+    {
+        return $this->classe?->teachers();
     }
 }
