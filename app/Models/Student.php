@@ -20,6 +20,8 @@ class Student extends Model
         'institution_id', // Ajout important
         'is_active',
         'metadata',
+        'user_id', // <-- ajoute ici
+
     ];
 
     protected $casts = [
@@ -63,4 +65,10 @@ class Student extends Model
     {
         return $this->classe?->teachers();
     }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
 }

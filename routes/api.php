@@ -212,6 +212,26 @@ Route::prefix('teacher')->name('teacher.')->middleware('auth:sanctum')->group(fu
     });
 });
 
+use App\Http\Controllers\Student\Auth\AuthController;
+
+Route::prefix('student/auth')->group(function () {
+    Route::post('login', [AuthController::class, 'login']);
+    
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('logout', [AuthController::class, 'logout']);
+        Route::get('me', [AuthController::class, 'me']);
+    });
+});
+
+use App\Http\Controllers\Student\StudentSessionController;
+
+// Route protégée par Sanctum (auth:sanctum)
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/student/session/join', [StudentSessionController::class, 'joinSession']);
+});
+
+
+
 // =================== ROUTES FALLBACK ===================
 
 // Route de fallback pour les API

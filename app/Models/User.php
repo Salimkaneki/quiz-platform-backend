@@ -81,6 +81,11 @@ class User extends Authenticatable
         return $this->account_type === 'student';
     }
 
+    public function student()
+    {
+        return $this->hasOne(Student::class);
+    }
+
     /**
      * Scopes
      */
