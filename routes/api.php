@@ -231,6 +231,24 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 
+use App\Http\Controllers\Student\StudentResponseController;
+
+// Groupe de routes pour étudiants avec middleware auth
+Route::middleware(['auth:sanctum'])->prefix('student')->group(function () {
+
+    // Soumettre les réponses d'une session (Result)
+    Route::post('/results/{resultId}/responses', [StudentResponseController::class, 'submitResponses'])
+         ->name('student.responses.submit');
+
+    // Optionnel : récupérer toutes les réponses d'un résultat (lecture)
+    Route::get('/results/{resultId}/responses', [StudentResponseController::class, 'index'])
+         ->name('student.responses.index');
+
+    // Optionnel : récupérer une réponse spécifique
+    Route::get('/results/{resultId}/responses/{questionId}', [StudentResponseController::class, 'show'])
+         ->name('student.responses.show');
+});
+
 
 // =================== ROUTES FALLBACK ===================
 
