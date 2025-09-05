@@ -3,12 +3,38 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use App\Models\Teacher;
 use App\Models\Administrator;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
 
 class TeacherController extends Controller
 {
+
+    public function availableUsers()
+    {
+        $admin = $this->checkPedagogicalPermissions();
+        if (!$admin) {
+            return $this->forbiddenResponse('Seuls les administrateurs pédagogiques peuvent voir les utilisateurs enseignants disponibles');
+        }
+
+        // On prend les users qui sont de type "teacher"
+        // mais qui ne sont pas encore liés à un Teacher
+        $users = User::where('account_type', 'teacher')
+            ->whereNotExists(function ($query) {
+                $query->select(DB::raw(1))
+                    ->from('teachers')
+                    ->whereColumn('users.id', 'teachers.user_id')
+                    ->where('institution_id', auth()->user()->institution_id); // filtre ici
+        })
+        ->get();
+
+
+        return response()->json($users);
+    }
+
     public function index(Request $request)
     {
         $admin = $this->checkPedagogicalPermissions();

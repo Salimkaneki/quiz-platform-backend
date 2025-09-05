@@ -69,11 +69,24 @@ class Result extends Model
         return $this->belongsTo(Student::class);
     }
 
-    public function studentResponses()
-    {
-        return $this->hasMany(StudentResponse::class, 'quiz_session_id', 'quiz_session_id')
-                    ->where('student_id', $this->student_id);
-    }
+    // public function studentResponses()
+    // {
+    //     return $this->hasMany(StudentResponse::class, 'quiz_session_id', 'quiz_session_id')
+    //                 ->where('student_id', $this->student_id);
+    // }
+
+    // public function studentResponses()
+    // {
+    //     return $this->hasMany(StudentResponse::class, 'quiz_session_id', 'quiz_session_id')
+    //                 ->where('student_id', $this->student_id); // fonctionnera si tu récupères les résultats déjà instanciés
+    // }
+
+// Dans StudentResponse
+public function scopeByStudent($query, $studentId)
+{
+    return $query->where('student_id', $studentId);
+}
+
 
     // Scopes
     public function scopeCompleted($query)
@@ -91,10 +104,10 @@ class Result extends Model
         return $query->where('status', 'published');
     }
 
-    public function scopeByStudent($query, $studentId)
-    {
-        return $query->where('student_id', $studentId);
-    }
+    // public function scopeByStudent($query, $studentId)
+    // {
+    //     return $query->where('student_id', $studentId);
+    // }
 
     // Helper methods
     public function calculateGrade($maxGrade = 20)
@@ -185,5 +198,18 @@ class Result extends Model
         $this->published_at = now();
         $this->save();
     }
+
+    public function studentResponses()
+    {
+        return $this->hasMany(StudentResponse::class, 'quiz_session_id', 'quiz_session_id')
+                    ->whereColumn('student_id', 'results.student_id');
+    }
+
+    // public function studentResponses()
+    // {
+    //     return $this->hasMany(StudentResponse::class, 'student_id', 'student_id')
+    //                 ->whereColumn('quiz_session_id', 'results.quiz_session_id');
+    // }
+
 
 }

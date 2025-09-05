@@ -50,10 +50,11 @@ class QuizSession extends Model
         return $this->belongsTo(User::class, 'teacher_id');
     }
 
-    public function studentResponses()
-    {
-        return $this->hasMany(StudentResponse::class);
-    }
+// QuizSession.php
+public function student_responses()
+{
+    return $this->hasMany(StudentResponse::class, 'quiz_session_id', 'id');
+}
 
     public function results()
     {

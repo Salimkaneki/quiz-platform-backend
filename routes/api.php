@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+
 // =================== IMPORTS ===================
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\InstitutionController;
@@ -70,6 +71,7 @@ Route::prefix('teachers')->name('teachers.')->group(function () {
     Route::put('/{teacher}', [TeacherController::class, 'update'])->name('update');
     Route::patch('/{teacher}', [TeacherController::class, 'update'])->name('patch');
     Route::delete('/{teacher}', [TeacherController::class, 'destroy'])->name('destroy');
+
     
     // Routes spécifiques
     Route::get('/permanent', [TeacherController::class, 'permanent'])->name('permanent');
@@ -95,13 +97,20 @@ Route::prefix('admin')->name('admin.')->group(function () {
 Route::prefix('admin')->name('admin.')->middleware('auth:sanctum')->group(function () {
     
     // ===== TEACHERS ADMIN =====
-    Route::prefix('teachers')->name('teachers.')->group(function () {
-        Route::get('/', [TeacherController::class, 'index'])->name('index');
-        Route::post('/', [TeacherController::class, 'store'])->name('store');
-        Route::get('/{teacher}', [TeacherController::class, 'show'])->name('show');
-        Route::put('/{teacher}', [TeacherController::class, 'update'])->name('update');
-        Route::delete('/{teacher}', [TeacherController::class, 'destroy'])->name('destroy');
-    });
+        
+        // ===== TEACHERS ADMIN =====
+        Route::prefix('teachers')->name('teachers.')->group(function () {
+            Route::get('/', [TeacherController::class, 'index'])->name('index');
+            Route::post('/', [TeacherController::class, 'store'])->name('store');
+            
+            // ⚡ On place /users avant la route paramétrée
+            Route::get('/users', [TeacherController::class, 'availableUsers'])->name('users');
+
+            Route::get('/{teacher}', [TeacherController::class, 'show'])->name('show');
+            Route::put('/{teacher}', [TeacherController::class, 'update'])->name('update');
+            Route::delete('/{teacher}', [TeacherController::class, 'destroy'])->name('destroy');
+        });
+
 
     // ===== FORMATIONS =====
     Route::prefix('formations')->name('formations.')->group(function () {
@@ -248,6 +257,23 @@ Route::middleware(['auth:sanctum'])->prefix('student')->group(function () {
     Route::get('/results/{resultId}/responses/{questionId}', [StudentResponseController::class, 'show'])
          ->name('student.responses.show');
 });
+
+use App\Http\Controllers\Teacher\ResultController;
+
+Route::middleware(['auth:sanctum'])->prefix('teacher')->group(function () {
+    
+    Route::get('quiz-sessions/{quizSessionId}/results', [ResultController::class, 'index']);
+    Route::get('results/{id}', [ResultController::class, 'show']);
+    Route::put('results/{id}', [ResultController::class, 'update']);
+    Route::put('results/{resultId}/responses/{responseId}', [ResultController::class, 'updateResponse']); // 🟢 Manquante
+    Route::post('results/{id}/mark-graded', [ResultController::class, 'markAsGraded']);
+    Route::post('results/{id}/publish', [ResultController::class, 'publish']);
+    Route::get('quiz/{quizId}/results', [ResultController::class, 'allResultsForQuiz']); // 🟢 Manquante
+});
+
+
+// routes/api.php
+// Route::get('teacher/quiz-sessions/{quizSessionId}/results', [ResultController::class, 'allResultsForQuiz']);
 
 
 // =================== ROUTES FALLBACK ===================
