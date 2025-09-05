@@ -103,14 +103,15 @@ Route::prefix('admin')->name('admin.')->middleware('auth:sanctum')->group(functi
             Route::get('/', [TeacherController::class, 'index'])->name('index');
             Route::post('/', [TeacherController::class, 'store'])->name('store');
             
-            // ⚡ On place /users avant la route paramétrée
+            // Routes statiques AVANT les routes paramétrées
             Route::get('/users', [TeacherController::class, 'availableUsers'])->name('users');
-
+            Route::get('/with-subjects', [TeacherSubjectController::class, 'teachersWithSubjects'])->name('with-subjects');
+            
+            // Routes paramétrées APRÈS les routes statiques
             Route::get('/{teacher}', [TeacherController::class, 'show'])->name('show');
             Route::put('/{teacher}', [TeacherController::class, 'update'])->name('update');
             Route::delete('/{teacher}', [TeacherController::class, 'destroy'])->name('destroy');
         });
-
 
     // ===== FORMATIONS =====
     Route::prefix('formations')->name('formations.')->group(function () {
@@ -141,6 +142,7 @@ Route::prefix('admin')->name('admin.')->middleware('auth:sanctum')->group(functi
     });
 
     // ===== STUDENTS =====
+// ===== STUDENTS =====
     Route::prefix('students')->name('students.')->group(function () {
         Route::get('/', [StudentController::class, 'index'])->name('index');
         Route::post('/', [StudentController::class, 'store'])->name('store');
@@ -150,6 +152,11 @@ Route::prefix('admin')->name('admin.')->middleware('auth:sanctum')->group(functi
         
         // Import spécifique
         Route::post('import', [StudentImportController::class, 'import'])->name('import');
+        
+        // ===== NOUVELLES ROUTES AJOUTÉES =====
+        Route::get('by-class/{classId}', [StudentController::class, 'getByClass'])->name('by_class');
+        // Route::get('by-class', [StudentController::class, 'getByClass'])->name('by_class_query');
+        Route::get('by-formation/{formationId}', [StudentController::class, 'getByFormation'])->name('by_formation');
     });
 
     // ===== TEACHER-SUBJECTS (Attributions) =====

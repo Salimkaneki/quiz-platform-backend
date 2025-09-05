@@ -329,4 +329,147 @@ class StudentController extends Controller
     {
         return response()->json(['message' => $message], 403);
     }
+
+    /**
+ * Récupérer les étudiants par classe
+ */
+public function getByClass(Request $request, $classId = null)
+{
+    $admin = $this->checkPedagogicalPermissions();
+    if (!$admin) {
+        return $this->forbiddenResponse('Non autorisé.');
+    }
+
+    // Si classId est fourni dans l'URL, on l'utilise, sinon on vérifie le paramètre de requête
+    $classId = $classId ?? $request->input('class_id');
+    
+    if (!$classId) {
+        return response()->json([
+            'message' => 'Le paramètre class_id est requis'
+        ], 400);
+    }
+
+    // Vérifier que la classe appartient à la même institution que l'admin
+    // Modification : vérification via la relation formation->institution_id
+    $classe = Classes::with('formation')
+                    ->where('id', $classId)
+                    ->whereHas('formation', function ($query) use ($admin) {
+                        $query->where('institution_id', $admin->institution_id);
+                    })
+                    ->first();
+
+    if (!$classe) {
+        return response()->json([
+            'message' => 'Classe non trouvée ou non autorisée'
+        ], 404);
+    }
+
+    $query = Student::with(['user', 'classe.formation'])
+                    ->where('class_id', $classId)
+                    ->where('institution_id', $admin->institution_id);
+
+    // Filtre par recherche si fourni
+    if ($request->search) {
+        $query->where(function ($q) use ($request) {
+            $q->where('first_name', 'like', "%{$request->search}%")
+              ->orWhere('last_name', 'like', "%{$request->search}%")
+              ->orWhere('email', 'like', "%{$request->search}%")
+              ->orWhere('student_number', 'like', "%{$request->search}%");
+        });
+    }
+
+    // Filtre par statut actif/inactif
+    if ($request->has('is_active')) {
+        $query->whereHas('user', function ($q) use ($request) {
+            $q->where('is_active', $request->is_active);
+        });
+    }
+
+    // Tri personnalisable
+    $sortBy = $request->sort_by ?? 'last_name';
+    $sortOrder = $request->sort_order ?? 'asc';
+    $query->orderBy($sortBy, $sortOrder);
+
+    // Pagination ou retour de tous les résultats
+    if ($request->has('per_page')) {
+        $perPage = $request->per_page ?? 15;
+        $students = $query->paginate($perPage);
+    } else {
+        $students = $query->get();
+    }
+
+    return response()->json([
+        'class' => $classe,
+        'students' => $students
+    ]);
+}
+
+/**
+ * Récupérer les étudiants par formation (toutes les classes d'une formation)
+ */
+public function getByFormation(Request $request, $formationId)
+{
+    $admin = $this->checkPedagogicalPermissions();
+    if (!$admin) {
+        return $this->forbiddenResponse('Non autorisé.');
+    }
+
+    // Vérifier d'abord que la formation appartient à l'institution
+    $formation = \App\Models\Formation::where('id', $formationId)
+                                     ->where('institution_id', $admin->institution_id)
+                                     ->first();
+
+    if (!$formation) {
+        return response()->json([
+            'message' => 'Formation non trouvée ou non autorisée'
+        ], 404);
+    }
+
+    // Récupérer les classes de la formation
+    $classes = Classes::where('formation_id', $formationId)
+                     ->pluck('id');
+
+    if ($classes->isEmpty()) {
+        return response()->json([
+            'message' => 'Aucune classe trouvée pour cette formation'
+        ], 404);
+    }
+
+    $query = Student::with(['user', 'classe.formation'])
+                    ->whereIn('class_id', $classes)
+                    ->where('institution_id', $admin->institution_id);
+
+    // Filtres (même logique que getByClass)
+    if ($request->search) {
+        $query->where(function ($q) use ($request) {
+            $q->where('first_name', 'like', "%{$request->search}%")
+              ->orWhere('last_name', 'like', "%{$request->search}%")
+              ->orWhere('email', 'like', "%{$request->search}%")
+              ->orWhere('student_number', 'like', "%{$request->search}%");
+        });
+    }
+
+    if ($request->has('is_active')) {
+        $query->whereHas('user', function ($q) use ($request) {
+            $q->where('is_active', $request->is_active);
+        });
+    }
+
+    $sortBy = $request->sort_by ?? 'last_name';
+    $sortOrder = $request->sort_order ?? 'asc';
+    $query->orderBy($sortBy, $sortOrder);
+
+    if ($request->has('per_page')) {
+        $perPage = $request->per_page ?? 15;
+        $students = $query->paginate($perPage);
+    } else {
+        $students = $query->get();
+    }
+
+    return response()->json([
+        'formation_id' => $formationId,
+        'students_count' => $students->count(),
+        'students' => $students
+    ]);
+}
 }

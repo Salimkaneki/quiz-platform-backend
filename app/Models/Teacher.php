@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Teacher extends Model
 {
@@ -22,22 +23,33 @@ class Teacher extends Model
         'metadata' => 'array'
     ];
 
-    // Relations
+    // Relations existantes
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
-
 
     public function institution(): BelongsTo
     {
         return $this->belongsTo(Institution::class);
     }
 
-    // Si vous avez des quiz plus tard
     public function quizzes(): HasMany
     {
         return $this->hasMany(Quiz::class);
+    }
+
+    // 🚀 Nouvelles relations utiles pour ton besoin
+    public function teacherSubjects(): HasMany
+    {
+        return $this->hasMany(TeacherSubject::class);
+    }
+
+    public function subjects(): BelongsToMany
+    {
+        return $this->belongsToMany(Subject::class, 'teacher_subjects')
+            ->withPivot('classe_id', 'academic_year', 'is_active')
+            ->withTimestamps();
     }
 
     // Scopes

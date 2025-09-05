@@ -155,4 +155,37 @@ class TeacherSubjectController extends Controller
         $institutionId = $relation ? $model->{$relation}->institution_id : $model->institution_id;
         return $institutionId === $admin->institution_id;
     }
+
+    public function teachersWithSubjects()
+    {
+        $admin = $this->checkPedagogicalPermissions();
+        if (!$admin) return $this->forbidden('Non autorisé.');
+
+        $teachers = Teacher::with([
+            'teacherSubjects.subject',
+            'teacherSubjects.classe'
+        ])->where('institution_id', $admin->institution_id)->get();
+
+        $result = $teachers->map(function($teacher) {
+            return [
+                'id' => $teacher->id,
+                'name' => $teacher->getFullName(),
+                'grade' => $teacher->getGradeLabel(),
+                'status' => $teacher->getStatusLabel(),
+                'subjects' => $teacher->teacherSubjects->map(function($ts) {
+                    return [
+                        'id' => $ts->subject->id,
+                        'name' => $ts->subject->name,
+                        'classe' => $ts->classe?->name,
+                        'academic_year' => $ts->academic_year,
+                        'is_active' => $ts->is_active,
+                    ];
+                })
+            ];
+        });
+
+        return response()->json($result);
+    }
+
+
 }
