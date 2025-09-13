@@ -44,4 +44,34 @@ class TeacherAuthController extends Controller
         $request->user()->currentAccessToken()->delete();
         return response()->json(['message' => 'Déconnecté avec succès']);
     }
+
+    // App\Http\Controllers\Auth\TeacherAuthController.php
+
+    public function mySubjects(Request $request)
+    {
+        // Récupérer le modèle Teacher lié à l'utilisateur connecté
+        $teacher = $request->user()->teacher;
+
+        if (!$teacher) {
+            return response()->json(['message' => 'Cet utilisateur n’est pas un enseignant valide.'], 403);
+        }
+
+        // Récupérer les attributions avec les matières et classes
+        $subjects = $teacher->teacherSubjects()->with(['subject', 'classe'])->get();
+
+        // Formater la réponse
+        $result = $subjects->map(function($ts) {
+            return [
+                'id' => $ts->id,
+                'subject_id' => $ts->subject->id,
+                'subject_name' => $ts->subject->name,
+                'classe_id' => $ts->classe?->id,
+                'classe_name' => $ts->classe?->name,
+                'academic_year' => $ts->academic_year,
+                'is_active' => $ts->is_active,
+            ];
+        });
+
+        return response()->json($result);
+    }
 }

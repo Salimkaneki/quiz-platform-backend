@@ -95,4 +95,7 @@ class Teacher extends Model
     {
         return $this->is_permanent ? 'Permanent' : 'Contractuel';
     }
+
+
+
 }

@@ -95,9 +95,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
 // ===== ADMIN RESOURCES (Toutes protégées) =====
 Route::prefix('admin')->name('admin.')->middleware('auth:sanctum')->group(function () {
-    
-    // ===== TEACHERS ADMIN =====
-        
+            
         // ===== TEACHERS ADMIN =====
         Route::prefix('teachers')->name('teachers.')->group(function () {
             Route::get('/', [TeacherController::class, 'index'])->name('index');
@@ -180,6 +178,7 @@ Route::prefix('teacher')->name('teacher.')->group(function () {
     // Routes protégées
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('me', [TeacherAuthController::class, 'me'])->name('me');
+        Route::get('my-subjects', [TeacherAuthController::class, 'mySubjects'])->name('my_subjects');
         Route::post('logout', [TeacherAuthController::class, 'logout'])->name('logout');
     });
 });
@@ -235,6 +234,7 @@ Route::prefix('student/auth')->group(function () {
     
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('logout', [AuthController::class, 'logout']);
+        Route::get('me', [AuthController::class, 'me']);
         Route::get('me', [AuthController::class, 'me']);
     });
 });
