@@ -38,7 +38,7 @@ class QuizSessionController extends Controller
             $this->validateStudentsInstitution($validated['allowed_students'], $teacher);
         }
 
-        // 🔎 Vérifier les doublons
+        // Vérifier les doublons
         $exists = QuizSession::where('teacher_id', $teacher->id)
             ->where('title', $validated['title'])
             ->where('starts_at', $validated['starts_at'])
@@ -96,7 +96,7 @@ class QuizSessionController extends Controller
             $this->validateStudentsInstitution($validated['allowed_students'], $teacher);
         }
 
-        // 🔎 Vérifier les doublons sauf la session courante
+        // Vérifier les doublons sauf la session courante
         $exists = QuizSession::where('teacher_id', $teacher->id)
             ->where('title', $validated['title'])
             ->where('starts_at', $validated['starts_at'])
@@ -118,9 +118,10 @@ class QuizSessionController extends Controller
         ]);
     }
 
+    // CORRECTION: Utiliser la bonne méthode pour les actions de statut
     public function activate($id)
     {
-        return $this->changeStatus($id, 'scheduled', 'active', 'activée');
+        return $this->changeStatus($id, 'scheduled', 'active', 'activée', 'activated_at');
     }
 
     public function complete($id)
@@ -143,33 +144,55 @@ class QuizSessionController extends Controller
         return $this->changeStatus($id, ['scheduled', 'active', 'paused'], 'cancelled', 'annulée');
     }
 
+    // CORRECTION: Amélioration de la méthode changeStatus
     private function changeStatus($id, $expectedStatus, $newStatus, $successMessage, $timestampField = null)
     {
-        $teacher = Auth::user()->teacher;
-        $session = QuizSession::findOrFail($id);
+        try {
+            $teacher = Auth::user()->teacher;
+            
+            if (!$teacher) {
+                return response()->json(['error' => 'Accès réservé aux enseignants'], 403);
+            }
 
-        if (!$teacher || $session->teacher_id !== $teacher->id) {
-            return response()->json(['error' => 'Non autorisé'], 403);
-        }
+            $session = QuizSession::findOrFail($id);
 
-        $expected = (array)$expectedStatus;
-        if (!in_array($session->status, $expected)) {
+            if ($session->teacher_id !== $teacher->id) {
+                return response()->json(['error' => 'Non autorisé'], 403);
+            }
+
+            $expected = (array)$expectedStatus;
+            if (!in_array($session->status, $expected)) {
+                return response()->json([
+                    'error' => "Impossible de {$successMessage} une session ayant le statut '{$session->status}'. Statut attendu : " . implode(' ou ', $expected)
+                ], 400);
+            }
+
+            $updateData = ['status' => $newStatus];
+            if ($timestampField) {
+                $updateData[$timestampField] = now();
+            }
+
+            $session->update($updateData);
+
+            // IMPORTANT: Recharger la session avec les relations
+            $session = $session->fresh()->load('quiz');
+
             return response()->json([
-                'error' => "Statut invalide pour cette opération."
-            ], 400);
+                'message' => "Session $successMessage avec succès",
+                'session' => $session
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error("Erreur lors du changement de statut de session", [
+                'session_id' => $id,
+                'action' => $successMessage,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'error' => 'Une erreur est survenue lors du changement de statut'
+            ], 500);
         }
-
-        $updateData = ['status' => $newStatus];
-        if ($timestampField) {
-            $updateData[$timestampField] = now();
-        }
-
-        $session->update($updateData);
-
-        return response()->json([
-            'message' => "Session $successMessage avec succès",
-            'session' => $session
-        ]);
     }
 
     private function validateStudentsInstitution($studentIds, $teacher)
@@ -193,5 +216,46 @@ class QuizSessionController extends Controller
             'student_ids' => $studentIds,
             'teacher_id' => $teacher->id
         ]);
+    }
+
+    public function destroy($id)
+    {
+        try {
+            $teacher = Auth::user()->teacher;
+            
+            if (!$teacher) {
+                return response()->json(['error' => 'Accès réservé aux enseignants'], 403);
+            }
+
+            $session = QuizSession::findOrFail($id);
+
+            if ($session->teacher_id !== $teacher->id) {
+                return response()->json(['error' => 'Non autorisé'], 403);
+            }
+
+            // Empêcher la suppression de sessions actives
+            if ($session->status === 'active') {
+                return response()->json([
+                    'error' => 'Impossible de supprimer une session active. Veuillez d\'abord la terminer ou l\'annuler.'
+                ], 400);
+            }
+
+            $session->delete();
+            
+            return response()->json([
+                'message' => 'Session supprimée avec succès'
+            ], 200);
+            
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de la suppression de session', [
+                'session_id' => $id,
+                'teacher_id' => $teacher->id ?? null,
+                'error' => $e->getMessage()
+            ]);
+            
+            return response()->json([
+                'error' => 'Une erreur est survenue lors de la suppression'
+            ], 500);
+        }
     }
 }

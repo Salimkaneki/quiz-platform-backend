@@ -201,6 +201,7 @@ Route::prefix('teacher')->name('teacher.')->middleware('auth:sanctum')->group(fu
         Route::post('/', [QuizSessionController::class, 'store'])->name('store');
         Route::get('/{id}', [QuizSessionController::class, 'show'])->name('show');
         Route::put('/{id}', [QuizSessionController::class, 'update'])->name('update');
+        Route::delete('/{id}', [QuizSessionController::class, 'destroy'])->name('destroy');
         
         // Actions sur les sessions
         Route::patch('/{id}/activate', [QuizSessionController::class, 'activate'])->name('activate');
