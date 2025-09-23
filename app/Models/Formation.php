@@ -30,9 +30,10 @@ class Formation extends Model
         return $this->belongsTo(Institution::class);
     }
 
+    // CORRECTION: Utiliser Classes au lieu de Classe
     public function classes()
     {
-        return $this->hasMany(Classe::class);
+        return $this->hasMany(Classes::class);
     }
 
     public function subjects()
@@ -43,13 +44,20 @@ class Formation extends Model
     // Classes actives pour l'année en cours
     public function activeClasses()
     {
-        return $this->hasMany(Classe::class)->where('is_active', true);
+        return $this->hasMany(Classes::class)->where('is_active', true);
     }
 
-    // Étudiants via les classes
+    // CORRECTION: Étudiants via les classes avec les bonnes clés étrangères
     public function students()
     {
-        return $this->hasManyThrough(Student::class, Classe::class);
+        return $this->hasManyThrough(
+            Student::class,      // Modèle final
+            Classes::class,      // Modèle intermédiaire
+            'formation_id',      // Clé étrangère sur classes (classes.formation_id)
+            'class_id',          // Clé étrangère sur students (students.class_id)
+            'id',               // Clé locale sur formations (formations.id)
+            'id'                // Clé locale sur classes (classes.id)
+        );
     }
 
     // Scopes
@@ -63,10 +71,28 @@ class Formation extends Model
         return $query->where('institution_id', $institutionId);
     }
 
+    // Étudiants actifs via les classes
+    public function activeStudents()
+    {
+        return $this->hasManyThrough(
+            Student::class,
+            Classes::class,
+            'formation_id',      // Clé étrangère sur classes
+            'class_id',          // Clé étrangère sur students  
+            'id',               // Clé locale sur formations
+            'id'                // Clé locale sur classes
+        )->where('students.is_active', true);
+    }
+
     // Helper methods
     public function getTotalStudentsAttribute()
     {
         return $this->students()->count();
+    }
+
+    public function getTotalActiveStudentsAttribute()
+    {
+        return $this->activeStudents()->count();
     }
 
     public function getTotalClassesAttribute()

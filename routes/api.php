@@ -292,3 +292,10 @@ Route::fallback(function(){
         'message' => 'Route not found.'
     ], 404);
 });
+use App\Http\Controllers\Admin\DashboardController;
+
+Route::middleware(['auth:sanctum'])->group(function () {
+    // Dashboard
+    Route::get('/admin/dashboard', [DashboardController::class, 'index']);
+    Route::get('/admin/dashboard/charts/{chartType}', [DashboardController::class, 'chartData']);
+});

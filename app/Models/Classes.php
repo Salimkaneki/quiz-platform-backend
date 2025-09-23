@@ -15,6 +15,7 @@ class Classes extends Model
         'level',
         'academic_year',
         'formation_id',
+        'institution_id', // Ajouté si pas déjà présent
         'max_students',
         'is_active',
     ];
@@ -36,17 +37,22 @@ class Classes extends Model
         return $this->belongsTo(Institution::class);
     }
 
-
-    // CORRECTION: Spécifier la bonne clé étrangère
+    // Relation avec les étudiants
     public function students()
     {
         return $this->hasMany(Student::class, 'class_id');
     }
 
+    // Étudiants actifs uniquement
+    public function activeStudents()
+    {
+        return $this->hasMany(Student::class, 'class_id')->where('is_active', true);
+    }
+
     // Enseignants via la table pivot teacher_subject
     public function teachers()
     {
-        return $this->belongsToMany(User::class, 'teacher_subject', 'classe_id', 'teacher_id')
+        return $this->belongsToMany(Teacher::class, 'teacher_subject', 'class_id', 'teacher_id')
                     ->withPivot('subject_id', 'academic_year', 'is_active')
                     ->withTimestamps();
     }
@@ -54,15 +60,9 @@ class Classes extends Model
     // Matières enseignées dans cette classe
     public function subjects()
     {
-        return $this->belongsToMany(Subject::class, 'teacher_subject', 'classe_id', 'subject_id')
+        return $this->belongsToMany(Subject::class, 'teacher_subject', 'class_id', 'subject_id')
                     ->withPivot('teacher_id', 'academic_year', 'is_active')
                     ->withTimestamps();
-    }
-
-    // Étudiants actifs
-    public function activeStudents()
-    {
-        return $this->hasMany(Student::class, 'class_id')->where('is_active', true);
     }
 
     // Scopes
@@ -81,25 +81,47 @@ class Classes extends Model
         return $query->where('level', $level);
     }
 
-    // Helper methods
+    public function scopeByInstitution($query, $institutionId)
+    {
+        return $query->where('institution_id', $institutionId);
+    }
+
+    // Accesseurs
     public function getStudentCountAttribute()
     {
         return $this->students()->count();
     }
 
-    public function hasSpace()
+    public function getActiveStudentCountAttribute()
     {
-        return $this->student_count < $this->max_students;
+        return $this->activeStudents()->count();
     }
-
-    // public function getFullNameAttribute()
-    // {
-    //     return $this->formation->code . ' - ' . $this->name . ' (' . $this->academic_year . ')';
-    // }
 
     public function getFullNameAttribute()
     {
-        return optional($this->formation)->code . ' - ' . $this->name . ' (' . $this->academic_year . ')';
+        $formationCode = optional($this->formation)->code ?? 'N/A';
+        return "{$formationCode} - {$this->name} ({$this->academic_year})";
     }
 
+    // Helper methods
+    public function hasSpace()
+    {
+        return $this->active_student_count < $this->max_students;
+    }
+
+    public function getAvailableSpacesAttribute()
+    {
+        return max(0, $this->max_students - $this->active_student_count);
+    }
+
+    public function getOccupationRateAttribute()
+    {
+        if ($this->max_students == 0) return 0;
+        return round(($this->active_student_count / $this->max_students) * 100, 1);
+    }
+
+    public function isFull()
+    {
+        return $this->active_student_count >= $this->max_students;
+    }
 }
