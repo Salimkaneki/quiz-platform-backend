@@ -90,4 +90,164 @@ class StudentSessionController extends Controller
             'result_id' => $result->id
         ], 200);
     }
+
+    /**
+     * Récupérer les questions d'une session pour l'étudiant
+     * GET /api/student/session/{sessionId}/questions
+     */
+    public function getQuestions($sessionId)
+    {
+        $student = Auth::user()->student;
+        if (!$student) {
+            return response()->json(['error' => 'Accès réservé aux étudiants'], 403);
+        }
+
+        // Vérifier que l'étudiant participe à cette session
+        $result = Result::where('quiz_session_id', $sessionId)
+            ->where('student_id', $student->id)
+            ->first();
+
+        if (!$result) {
+            return response()->json(['error' => 'Vous ne participez pas à cette session'], 403);
+        }
+
+        $session = QuizSession::with(['quiz.questions' => function($query) {
+            $query->ordered();
+        }])->findOrFail($sessionId);
+
+        // Vérifier que la session est accessible
+        if (!in_array($session->status, ['scheduled', 'active'])) {
+            return response()->json(['error' => 'Session non disponible'], 400);
+        }
+
+        // Formater les questions pour l'étudiant (sans les bonnes réponses)
+        $questions = $session->quiz->questions->map(function($question) {
+            return [
+                'id' => $question->id,
+                'question_text' => $question->question_text,
+                'type' => $question->type,
+                'points' => $question->points,
+                'order' => $question->order,
+                'image_url' => $question->image_url,
+                'time_limit' => $question->time_limit,
+                'options' => $question->type === 'multiple_choice' ? 
+                    collect($question->options)->map(function($option, $index) {
+                        return [
+                            'id' => $index,
+                            'text' => $option['text'] ?? ''
+                        ];
+                    })->values()->toArray() : null
+            ];
+        });
+
+        return response()->json([
+            'session' => [
+                'id' => $session->id,
+                'title' => $session->title,
+                'status' => $session->status,
+                'starts_at' => $session->starts_at,
+                'ends_at' => $session->ends_at,
+                'duration_minutes' => $session->quiz->duration_minutes,
+            ],
+            'questions' => $questions,
+            'total_questions' => $questions->count(),
+            'result_id' => $result->id
+        ]);
+    }
+
+    /**
+     * Récupérer une question spécifique
+     * GET /api/student/session/{sessionId}/questions/{questionId}
+     */
+    public function getQuestion($sessionId, $questionId)
+    {
+        $student = Auth::user()->student;
+        if (!$student) {
+            return response()->json(['error' => 'Accès réservé aux étudiants'], 403);
+        }
+
+        // Vérifier que l'étudiant participe à cette session
+        $result = Result::where('quiz_session_id', $sessionId)
+            ->where('student_id', $student->id)
+            ->first();
+
+        if (!$result) {
+            return response()->json(['error' => 'Vous ne participez pas à cette session'], 403);
+        }
+
+        $question = \App\Models\Question::whereHas('quiz.sessions', function($query) use ($sessionId) {
+            $query->where('id', $sessionId);
+        })->findOrFail($questionId);
+
+        // Vérifier si l'étudiant a déjà répondu à cette question
+        $existingResponse = \App\Models\StudentResponse::where('quiz_session_id', $sessionId)
+            ->where('student_id', $student->id)
+            ->where('question_id', $questionId)
+            ->first();
+
+        return response()->json([
+            'question' => [
+                'id' => $question->id,
+                'question_text' => $question->question_text,
+                'type' => $question->type,
+                'points' => $question->points,
+                'order' => $question->order,
+                'image_url' => $question->image_url,
+                'time_limit' => $question->time_limit,
+                'options' => $question->type === 'multiple_choice' ? 
+                    collect($question->options)->map(function($option, $index) {
+                        return [
+                            'id' => $index,
+                            'text' => $option['text'] ?? ''
+                        ];
+                    })->values()->toArray() : null
+            ],
+            'has_answered' => $existingResponse ? true : false,
+            'student_answer' => $existingResponse ? $existingResponse->answer : null,
+            'result_id' => $result->id
+        ]);
+    }
+
+    /**
+     * Récupérer le statut de progression de l'étudiant
+     * GET /api/student/session/{sessionId}/progress
+     */
+    public function getProgress($sessionId)
+    {
+        $student = Auth::user()->student;
+        if (!$student) {
+            return response()->json(['error' => 'Accès réservé aux étudiants'], 403);
+        }
+
+        $result = Result::where('quiz_session_id', $sessionId)
+            ->where('student_id', $student->id)
+            ->with('quizSession.quiz.questions')
+            ->firstOrFail();
+
+        $totalQuestions = $result->quizSession->quiz->questions->count();
+        $answeredQuestions = \App\Models\StudentResponse::where('quiz_session_id', $sessionId)
+            ->where('student_id', $student->id)
+            ->count();
+
+        $progress = [
+            'total_questions' => $totalQuestions,
+            'answered_questions' => $answeredQuestions,
+            'remaining_questions' => $totalQuestions - $answeredQuestions,
+            'percentage_complete' => $totalQuestions > 0 ? round(($answeredQuestions / $totalQuestions) * 100, 1) : 0,
+            'is_completed' => $result->isCompleted(),
+            'time_elapsed' => $result->started_at ? now()->diffInMinutes($result->started_at) : 0,
+            'session_duration' => $result->quizSession->quiz->duration_minutes,
+        ];
+
+        return response()->json([
+            'progress' => $progress,
+            'result' => [
+                'id' => $result->id,
+                'status' => $result->status,
+                'total_points' => $result->total_points,
+                'max_points' => $result->max_points,
+                'percentage' => $result->percentage,
+            ]
+        ]);
+    }
 }

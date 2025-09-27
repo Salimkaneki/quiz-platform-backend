@@ -22,7 +22,7 @@ class StudentResponseController extends Controller
 
         $result = Result::where('id', $resultId)
             ->where('student_id', $student->id)
-            ->with('quizSession.quiz.questions')
+            ->with('quizSession.quiz')
             ->firstOrFail();
 
         if ($result->isCompleted()) {
@@ -37,7 +37,14 @@ class StudentResponseController extends Controller
 
         \DB::transaction(function() use ($result, $request) {
             foreach ($request->responses as $resp) {
-                $question = $result->quizSession->quiz->questions->find($resp['question_id']);
+                // Charger la question spécifique au lieu de la chercher dans la collection
+                $question = $result->quizSession->quiz->questions()
+                    ->where('id', $resp['question_id'])
+                    ->first();
+
+                if (!$question) {
+                    throw new \Exception("Question introuvable: {$resp['question_id']}");
+                }
 
                 $pointsPossible = $question->points ?? 0;
                 $isCorrect = null;
@@ -101,7 +108,11 @@ class StudentResponseController extends Controller
     public function show($resultId, $questionId)
     {
         $student = Auth::user()->student;
-        $response = StudentResponse::where('quiz_session_id', $resultId)
+        $result = Result::where('id', $resultId)
+            ->where('student_id', $student->id)
+            ->firstOrFail();
+
+        $response = StudentResponse::where('quiz_session_id', $result->quiz_session_id)
             ->where('student_id', $student->id)
             ->where('question_id', $questionId)
             ->with('question')

@@ -202,7 +202,7 @@ public function scopeByStudent($query, $studentId)
     public function studentResponses()
     {
         return $this->hasMany(StudentResponse::class, 'quiz_session_id', 'quiz_session_id')
-                    ->whereColumn('student_id', 'results.student_id');
+                    ->where('student_id', $this->student_id);
     }
 
     // public function studentResponses()

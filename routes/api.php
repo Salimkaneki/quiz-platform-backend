@@ -5,25 +5,26 @@ use Illuminate\Support\Facades\Route;
 
 
 // =================== IMPORTS ===================
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\InstitutionController;
+use App\Http\Controllers\Management\UserController;
+use App\Http\Controllers\Management\InstitutionController;
 
 // Admin Controllers
-use App\Http\Controllers\Admin\AdministratorController;
+use App\Http\Controllers\Management\AdministratorController;
 use App\Http\Controllers\Admin\TeacherController;
-use App\Http\Controllers\Admin\AdminAuthController;
-use App\Http\Controllers\Admin\FormationController;
-use App\Http\Controllers\Admin\SubjectController;
-use App\Http\Controllers\Admin\ClasseController;
+use App\Http\Controllers\Auth\AdminAuthController;
+use App\Http\Controllers\Management\FormationController;
+use App\Http\Controllers\Management\SubjectController;
+use App\Http\Controllers\Management\ClasseController;
 use App\Http\Controllers\Admin\StudentController;
-use App\Http\Controllers\Admin\TeacherSubjectController;
+use App\Http\Controllers\Management\TeacherSubjectController;
 use App\Http\Controllers\Admin\StudentImportController;
+use App\Http\Controllers\Admin\QuizController as AdminQuizController;
 
 // Teacher Controllers
 use App\Http\Controllers\Auth\TeacherAuthController;
-use App\Http\Controllers\Teacher\QuizSessionController;
-use App\Http\Controllers\Teacher\Quiz\QuizController;
-use App\Http\Controllers\Teacher\Quiz\QuestionController;
+use App\Http\Controllers\Quiz\QuizSessionController;
+use App\Http\Controllers\Quiz\QuizController;
+use App\Http\Controllers\Quiz\QuestionController;
 
 // =================== ROUTES PUBLIQUES ===================
 
@@ -94,7 +95,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 });
 
 // ===== ADMIN RESOURCES (Toutes protégées) =====
-Route::prefix('admin')->name('admin.')->middleware('auth:sanctum')->group(function () {
+Route::prefix('admin')->name('admin.')->middleware(['auth:sanctum', 'admin'])->group(function () {
             
         // ===== TEACHERS ADMIN =====
         Route::prefix('teachers')->name('teachers.')->group(function () {
@@ -166,6 +167,15 @@ Route::prefix('admin')->name('admin.')->middleware('auth:sanctum')->group(functi
         Route::patch('/{teacherSubject}', [TeacherSubjectController::class, 'update'])->name('patch');
         Route::delete('/{teacherSubject}', [TeacherSubjectController::class, 'destroy'])->name('destroy');
     });
+
+    // ===== QUIZZES (Vue admin) =====
+    Route::prefix('quizzes')->name('quizzes.')->group(function () {
+        Route::get('/', [AdminQuizController::class, 'index'])->name('index');
+        Route::get('/{id}', [AdminQuizController::class, 'show'])->name('show');
+        Route::get('/by-teacher/{teacherId}', [AdminQuizController::class, 'getByTeacher'])->name('by_teacher');
+        Route::get('/by-subject/{subjectId}', [AdminQuizController::class, 'getBySubject'])->name('by_subject');
+        Route::get('/statistics', [AdminQuizController::class, 'getStatistics'])->name('statistics');
+    });
 });
 
 // =================== ROUTES TEACHER ===================
@@ -228,15 +238,15 @@ Route::prefix('teacher')->name('teacher.')->middleware('auth:sanctum')->group(fu
     });
 });
 
-use App\Http\Controllers\Student\Auth\AuthController;
+use App\Http\Controllers\Auth\StudentAuthController;
 
 Route::prefix('student/auth')->group(function () {
-    Route::post('login', [AuthController::class, 'login']);
+    Route::post('login', [StudentAuthController::class, 'login']);
     
     Route::middleware('auth:sanctum')->group(function () {
-        Route::post('logout', [AuthController::class, 'logout']);
-        Route::get('me', [AuthController::class, 'me']);
-        Route::get('me', [AuthController::class, 'me']);
+        Route::post('logout', [StudentAuthController::class, 'logout']);
+        Route::get('me', [StudentAuthController::class, 'me']);
+        Route::get('me', [StudentAuthController::class, 'me']);
     });
 });
 
@@ -245,6 +255,11 @@ use App\Http\Controllers\Student\StudentSessionController;
 // Route protégée par Sanctum (auth:sanctum)
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/student/session/join', [StudentSessionController::class, 'joinSession']);
+    
+    // Nouvelles routes pour la navigation dans le quiz
+    Route::get('/student/session/{sessionId}/questions', [StudentSessionController::class, 'getQuestions']);
+    Route::get('/student/session/{sessionId}/questions/{questionId}', [StudentSessionController::class, 'getQuestion']);
+    Route::get('/student/session/{sessionId}/progress', [StudentSessionController::class, 'getProgress']);
 });
 
 
@@ -266,17 +281,17 @@ Route::middleware(['auth:sanctum'])->prefix('student')->group(function () {
          ->name('student.responses.show');
 });
 
-use App\Http\Controllers\Teacher\ResultController;
+use App\Http\Controllers\Quiz\ResultController;
 
 Route::middleware(['auth:sanctum'])->prefix('teacher')->group(function () {
     
     Route::get('quiz-sessions/{quizSessionId}/results', [ResultController::class, 'index']);
     Route::get('results/{id}', [ResultController::class, 'show']);
     Route::put('results/{id}', [ResultController::class, 'update']);
-    Route::put('results/{resultId}/responses/{responseId}', [ResultController::class, 'updateResponse']); // 🟢 Manquante
+    Route::put('results/{resultId}/responses/{responseId}', [ResultController::class, 'updateResponse']);
     Route::post('results/{id}/mark-graded', [ResultController::class, 'markAsGraded']);
     Route::post('results/{id}/publish', [ResultController::class, 'publish']);
-    Route::get('quiz/{quizId}/results', [ResultController::class, 'allResultsForQuiz']); // 🟢 Manquante
+    Route::get('quiz/{quizId}/results', [ResultController::class, 'allResultsForQuiz']); 
 });
 
 
@@ -294,7 +309,7 @@ Route::fallback(function(){
 });
 use App\Http\Controllers\Admin\DashboardController;
 
-Route::middleware(['auth:sanctum'])->group(function () {
+Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     // Dashboard
     Route::get('/admin/dashboard', [DashboardController::class, 'index']);
     Route::get('/admin/dashboard/charts/{chartType}', [DashboardController::class, 'chartData']);
