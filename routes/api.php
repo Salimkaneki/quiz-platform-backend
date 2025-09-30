@@ -252,6 +252,7 @@ use App\Http\Controllers\Student\StudentSessionController;
 
 // Route protégée par Sanctum (auth:sanctum)
 Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/student/sessions', [StudentSessionController::class, 'index']);
     Route::post('/student/session/join', [StudentSessionController::class, 'joinSession']);
     
     // Nouvelles routes pour la navigation dans le quiz

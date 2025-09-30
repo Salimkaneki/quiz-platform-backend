@@ -11,6 +11,55 @@ use Illuminate\Support\Facades\Auth;
 class StudentSessionController extends Controller
 {
     /**
+     * Lister les sessions d'examen disponibles pour l'étudiant
+     */
+    public function index()
+    {
+        $student = Auth::user()->student;
+        if (!$student) {
+            return response()->json(['error' => 'Accès réservé aux étudiants'], 403);
+        }
+
+        // Récupérer les sessions actives (l'heure est vérifiée lors de la tentative de rejoindre)
+        $sessions = QuizSession::with('quiz.subject')
+            ->where('status', 'active')
+            ->get()
+            ->map(function($session) {
+                $now = now();
+                if ($now->lt($session->starts_at)) {
+                    $join_status = 'à venir';
+                } elseif ($now->gt($session->ends_at)) {
+                    $join_status = 'terminée';
+                } else {
+                    $join_status = 'disponible';
+                }
+                return [
+                    'id' => $session->id,
+                    'title' => $session->title,
+                    'session_code' => $session->session_code,
+                    'status' => $session->status,
+                    'starts_at' => $session->starts_at,
+                    'ends_at' => $session->ends_at,
+                    'max_participants' => $session->max_participants,
+                    'join_status' => $join_status,
+                    'quiz' => [
+                        'id' => $session->quiz->id,
+                        'title' => $session->quiz->title,
+                        'subject' => $session->quiz->subject ? [
+                            'id' => $session->quiz->subject->id,
+                            'name' => $session->quiz->subject->name
+                        ] : null,
+                        'duration_minutes' => $session->quiz->duration_minutes
+                    ]
+                ];
+            });
+
+        return response()->json([
+            'sessions' => $sessions,
+            'total' => $sessions->count()
+        ]);
+    }
+    /**
      * Rejoindre une session via son code
      */
     public function joinSession(Request $request)
@@ -36,6 +85,15 @@ class StudentSessionController extends Controller
         // Vérifier que la session est active ou programmée
         if (!in_array($session->status, ['scheduled', 'active'])) {
             return response()->json(['error' => 'Session non disponible'], 400);
+        }
+
+        // Vérifier les horaires
+        if (now()->lt($session->starts_at)) {
+            return response()->json(['error' => 'La session n\'a pas encore commencé'], 400);
+        }
+
+        if (now()->gt($session->ends_at)) {
+            return response()->json(['error' => 'La session est terminée'], 400);
         }
 
         // Vérifier l'accès de l'étudiant si session restreinte

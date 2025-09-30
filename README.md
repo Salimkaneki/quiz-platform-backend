@@ -418,6 +418,11 @@ GET    /api/teacher/history/results            # Historique des résultats
 
 ### 👨‍🎓 **Étudiant**
 
+#### Lister les sessions disponibles
+```
+GET    /api/student/sessions                         # Lister les sessions d'examen disponibles
+```
+
 #### Participation aux Sessions
 ```
 POST   /api/student/session/join                      # Rejoindre une session
