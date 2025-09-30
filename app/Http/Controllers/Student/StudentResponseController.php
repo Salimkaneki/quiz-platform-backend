@@ -15,8 +15,11 @@ class StudentResponseController extends Controller
      */
     public function submitResponses(Request $request, $resultId)
     {
+        \Log::info('Starting submitResponses', ['resultId' => $resultId, 'user' => Auth::id()]);
+
         $student = Auth::user()->student;
         if (!$student) {
+            \Log::info('No student found for user', ['user' => Auth::id()]);
             return response()->json(['error' => 'Accès réservé aux étudiants'], 403);
         }
 
@@ -25,24 +28,32 @@ class StudentResponseController extends Controller
             ->with('quizSession.quiz')
             ->firstOrFail();
 
+        \Log::info('Result found', ['result' => $result->id, 'status' => $result->status]);
+
         if ($result->isCompleted()) {
+            \Log::info('Result already completed');
             return response()->json(['error' => 'Résultat déjà soumis'], 400);
         }
 
         $request->validate([
             'responses' => 'required|array',
-            'responses.*.question_id' => 'required|integer|exists:questions,id',
+            'responses.*.question_id' => 'required|integer|exists:questions,id,quiz_id,' . $result->quizSession->quiz->id,
             'responses.*.answer' => 'required'
         ]);
 
+        \Log::info('Validation passed', ['responses_count' => count($request->responses)]);
+
         \DB::transaction(function() use ($result, $request) {
+            \Log::info('Starting transaction');
             foreach ($request->responses as $resp) {
+                \Log::info('Processing response', ['question_id' => $resp['question_id']]);
                 // Charger la question spécifique au lieu de la chercher dans la collection
                 $question = $result->quizSession->quiz->questions()
                     ->where('id', $resp['question_id'])
                     ->first();
 
                 if (!$question) {
+                    \Log::error("Question not found", ['question_id' => $resp['question_id']]);
                     throw new \Exception("Question introuvable: {$resp['question_id']}");
                 }
 
@@ -54,6 +65,12 @@ class StudentResponseController extends Controller
                     $isCorrect = $question->checkAnswer($resp['answer']);
                     $pointsEarned = $isCorrect ? $pointsPossible : 0;
                 }
+
+                \Log::info('Creating/updating response', [
+                    'question_id' => $question->id,
+                    'is_correct' => $isCorrect,
+                    'points_earned' => $pointsEarned
+                ]);
 
                 StudentResponse::updateOrCreate(
                     [
@@ -73,7 +90,13 @@ class StudentResponseController extends Controller
 
             $result->updateFromResponses();
             $result->markAsSubmitted();
+            \Log::info('Transaction completed');
         });
+
+        \Log::info('Returning response', [
+            'total_points' => $result->total_points,
+            'max_points' => $result->max_points
+        ]);
 
         return response()->json([
             'message' => 'Réponses soumises avec succès',

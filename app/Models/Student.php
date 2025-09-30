@@ -15,19 +15,27 @@ class Student extends Model
         'last_name',
         'email',
         'birth_date',
+        'date_of_birth',
         'phone',
+        'address',
+        'emergency_contact',
+        'emergency_phone',
+        'medical_info',
+        'preferences',
+        'profile_picture',
         'class_id',
-        'institution_id', // Ajout important
+        'institution_id',
         'is_active',
         'metadata',
-        'user_id', // <-- ajoute ici
-
+        'user_id',
     ];
 
     protected $casts = [
         'birth_date' => 'date',
+        'date_of_birth' => 'date',
         'is_active' => 'boolean',
         'metadata' => 'array',
+        'preferences' => 'array',
     ];
 
     // Relations
@@ -69,6 +77,11 @@ class Student extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function results()
+    {
+        return $this->hasMany(Result::class);
     }
 
 }

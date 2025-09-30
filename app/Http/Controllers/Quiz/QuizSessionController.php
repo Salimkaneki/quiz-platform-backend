@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Quiz;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Traits\AuthorizationTrait;
 use App\Http\Requests\StoreQuizSessionRequest;
 use App\Http\Requests\UpdateQuizSessionRequest;
 use App\Models\QuizSession;
@@ -13,30 +14,50 @@ use Illuminate\Support\Facades\Log;
 
 class QuizSessionController extends Controller
 {
+    use AuthorizationTrait;
+
     public function index()
     {
-        $teacher = Auth::user()->teacher;
+        $teacher = $this->getAuthenticatedTeacher();
 
-        if (!$teacher) {
-            return response()->json(['error' => 'Accès réservé aux enseignants'], 403);
+        $query = QuizSession::where('teacher_id', $teacher->id)
+            ->with(['quiz.subject']);
+
+        // Filtres optionnels
+        if (request()->has('status')) {
+            $query->where('status', request('status'));
         }
 
-        $sessions = QuizSession::where('teacher_id', $teacher->id)
-            ->with('quiz')
-            ->latest()
-            ->get();
+        if (request()->has('quiz_id')) {
+            $query->where('quiz_id', request('quiz_id'));
+        }
 
-        return response()->json($sessions);
+        $sessions = $query->latest()
+            ->paginate(request()->get('per_page', 15));
+
+        return response()->json([
+            'sessions' => $sessions->items(),
+            'pagination' => [
+                'current_page' => $sessions->currentPage(),
+                'last_page' => $sessions->lastPage(),
+                'per_page' => $sessions->perPage(),
+                'total' => $sessions->total(),
+            ]
+        ]);
     }
 
     public function store(StoreQuizSessionRequest $request)
     {
-        $teacher = Auth::user()->teacher;
+        $teacher = $this->getAuthenticatedTeacher();
         $validated = $request->validated();
 
+        // Validation des étudiants si fournis
         if (!empty($validated['allowed_students'])) {
             $this->validateStudentsInstitution($validated['allowed_students'], $teacher);
         }
+
+        // Vérification des conflits d'horaires
+        $this->checkScheduleConflicts($teacher, $validated['starts_at'], $validated['ends_at']);
 
         // Vérifier les doublons
         $exists = QuizSession::where('teacher_id', $teacher->id)
@@ -59,42 +80,42 @@ class QuizSessionController extends Controller
 
         return response()->json([
             'message' => 'Session créée avec succès',
-            'session' => $session->load('quiz')
+            'session' => $session->load('quiz.subject')
         ], 201);
     }
 
     public function show($id)
     {
-        $teacher = Auth::user()->teacher;
-        $session = QuizSession::with('quiz')->findOrFail($id);
+        $teacher = $this->getAuthenticatedTeacher();
+        $session = QuizSession::with(['quiz.subject', 'results.student'])->findOrFail($id);
 
-        if (!$teacher || $session->teacher_id !== $teacher->id) {
-            return response()->json(['error' => 'Non autorisé'], 403);
-        }
+        $this->authorizeTeacherResource($session, 'session');
 
         return response()->json($session);
     }
 
     public function update(UpdateQuizSessionRequest $request, $id)
     {
-        $teacher = Auth::user()->teacher;
+        $teacher = $this->getAuthenticatedTeacher();
         $session = QuizSession::findOrFail($id);
 
-        if (!$teacher || $session->teacher_id !== $teacher->id) {
-            return response()->json(['error' => 'Non autorisé'], 403);
-        }
+        $this->authorizeTeacherResource($session, 'session');
 
-        if (in_array($session->status, ['active', 'completed', 'cancelled'])) {
+        if (in_array($session->status, ['active', 'completed'])) {
             return response()->json([
-                'error' => 'Impossible de modifier une session active, terminée ou annulée'
+                'error' => 'Impossible de modifier une session active ou terminée'
             ], 400);
         }
 
         $validated = $request->validated();
 
+        // Validation des étudiants si fournis
         if (!empty($validated['allowed_students'])) {
             $this->validateStudentsInstitution($validated['allowed_students'], $teacher);
         }
+
+        // Vérification des conflits d'horaires (exclure la session actuelle)
+        $this->checkScheduleConflicts($teacher, $validated['starts_at'], $validated['ends_at'], $session->id);
 
         // Vérifier les doublons sauf la session courante
         $exists = QuizSession::where('teacher_id', $teacher->id)
@@ -114,11 +135,11 @@ class QuizSessionController extends Controller
 
         return response()->json([
             'message' => 'Session mise à jour avec succès',
-            'session' => $session->fresh()->load('quiz')
+            'session' => $session->fresh()->load('quiz.subject')
         ]);
     }
 
-    // CORRECTION: Utiliser la bonne méthode pour les actions de statut
+    // Actions simplifiées avec 3 statuts seulement
     public function activate($id)
     {
         return $this->changeStatus($id, 'scheduled', 'active', 'activée', 'activated_at');
@@ -126,39 +147,17 @@ class QuizSessionController extends Controller
 
     public function complete($id)
     {
-        return $this->changeStatus($id, ['active', 'paused'], 'completed', 'terminée', 'completed_at');
-    }
-
-    public function pause($id)
-    {
-        return $this->changeStatus($id, 'active', 'paused', 'mise en pause');
-    }
-
-    public function resume($id)
-    {
-        return $this->changeStatus($id, 'paused', 'active', 'reprise');
-    }
-
-    public function cancel($id)
-    {
-        return $this->changeStatus($id, ['scheduled', 'active', 'paused'], 'cancelled', 'annulée');
+        return $this->changeStatus($id, 'active', 'completed', 'terminée', 'completed_at');
     }
 
     // CORRECTION: Amélioration de la méthode changeStatus
     private function changeStatus($id, $expectedStatus, $newStatus, $successMessage, $timestampField = null)
     {
         try {
-            $teacher = Auth::user()->teacher;
-            
-            if (!$teacher) {
-                return response()->json(['error' => 'Accès réservé aux enseignants'], 403);
-            }
-
+            $teacher = $this->getAuthenticatedTeacher();
             $session = QuizSession::findOrFail($id);
 
-            if ($session->teacher_id !== $teacher->id) {
-                return response()->json(['error' => 'Non autorisé'], 403);
-            }
+            $this->authorizeTeacherResource($session, 'session');
 
             $expected = (array)$expectedStatus;
             if (!in_array($session->status, $expected)) {
@@ -175,7 +174,7 @@ class QuizSessionController extends Controller
             $session->update($updateData);
 
             // IMPORTANT: Recharger la session avec les relations
-            $session = $session->fresh()->load('quiz');
+            $session = $session->fresh()->load('quiz.subject');
 
             return response()->json([
                 'message' => "Session $successMessage avec succès",
@@ -195,43 +194,13 @@ class QuizSessionController extends Controller
         }
     }
 
-    private function validateStudentsInstitution($studentIds, $teacher)
-    {
-        $validStudents = Student::whereIn('id', $studentIds)
-            ->where('is_active', true)
-            ->get();
-
-        if ($validStudents->count() !== count($studentIds)) {
-            $foundIds = $validStudents->pluck('id')->toArray();
-            $missingIds = array_diff($studentIds, $foundIds);
-
-            throw ValidationException::withMessages([
-                'allowed_students' => [
-                    'Les étudiants suivants sont introuvables ou inactifs: ' . implode(', ', $missingIds)
-                ]
-            ]);
-        }
-
-        Log::info('Students validation passed', [
-            'student_ids' => $studentIds,
-            'teacher_id' => $teacher->id
-        ]);
-    }
-
     public function destroy($id)
     {
         try {
-            $teacher = Auth::user()->teacher;
-            
-            if (!$teacher) {
-                return response()->json(['error' => 'Accès réservé aux enseignants'], 403);
-            }
-
+            $teacher = $this->getAuthenticatedTeacher();
             $session = QuizSession::findOrFail($id);
 
-            if ($session->teacher_id !== $teacher->id) {
-                return response()->json(['error' => 'Non autorisé'], 403);
-            }
+            $this->authorizeTeacherResource($session, 'session');
 
             // Empêcher la suppression de sessions actives
             if ($session->status === 'active') {
@@ -241,18 +210,18 @@ class QuizSessionController extends Controller
             }
 
             $session->delete();
-            
+
             return response()->json([
                 'message' => 'Session supprimée avec succès'
             ], 200);
-            
+
         } catch (\Exception $e) {
             Log::error('Erreur lors de la suppression de session', [
                 'session_id' => $id,
                 'teacher_id' => $teacher->id ?? null,
                 'error' => $e->getMessage()
             ]);
-            
+
             return response()->json([
                 'error' => 'Une erreur est survenue lors de la suppression'
             ], 500);

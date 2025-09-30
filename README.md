@@ -8,7 +8,77 @@ Cette application fournit une API REST complète pour une plateforme de quiz éd
 
 ## 🏗️ Architecture
 
-### Technologies utilisées
+### Techn# 5. Rejoindre une s# 7. Soumettre des réponses (plusieurs types)
+curl -X POST http://localhost:8000/api/student/results/1/responses \
+  -H "Authorization: Bearer {TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "responses": [
+      {"question_id": 1, "answer": "Paris"},
+      {"question_id": 2, "answer": "true"},
+      {"question_id": 3, "answer": "0"},
+      {"question_id": 4, "answer": "Ma réponse ouverte"}
+    ]
+  }'
+
+## Gestion du Profil Étudiant
+
+### 1. Voir le profil
+curl -X GET http://localhost:8000/api/student/profile \
+  -H "Authorization: Bearer {TOKEN}"
+
+### 2. Mettre à jour le profil
+curl -X PUT http://localhost:8000/api/student/profile \
+  -H "Authorization: Bearer {TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "first_name": "John",
+    "last_name": "Doe",
+    "address": "123 Main St",
+    "emergency_contact": "+1234567890",
+    "preferences": {"theme": "dark", "notifications": true}
+  }'
+
+### 3. Changer le mot de passe
+curl -X PUT http://localhost:8000/api/student/profile/password \
+  -H "Authorization: Bearer {TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "current_password": "oldpassword",
+    "password": "newpassword123",
+    "password_confirmation": "newpassword123"
+  }'
+
+### 4. Télécharger une photo de profil
+curl -X POST http://localhost:8000/api/student/profile/picture \
+  -H "Authorization: Bearer {TOKEN}" \
+  -F "profile_picture=@/path/to/your/photo.jpg"
+
+### 5. Supprimer la photo de profil
+curl -X DELETE http://localhost:8000/api/student/profile/picture \
+  -H "Authorization: Bearer {TOKEN}"
+
+### 6. Voir le tableau de bord
+curl -X GET http://localhost:8000/api/student/dashboard \
+  -H "Authorization: Bearer {TOKEN}"
+
+#### Réponse du tableau de bord
+Le tableau de bord retourne un objet JSON complet avec :
+- **stats** : Statistiques générales (quiz passés, moyenne, etc.)
+- **recent_results** : Derniers résultats (10 plus récents)
+- **active_sessions** : Sessions de quiz en cours
+- **upcoming_sessions** : Sessions disponibles à rejoindre
+- **subject_progress** : Progression par matière
+- **in_progress_quizzes** : Quiz commencés mais non terminés-X POST http://localhost:8000/api/student/session/join \
+  -H "Authorization: Bearer {TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{"session_code":"ABC123"}'
+
+# 6. Voir les questions
+curl -X GET http://localhost:8000/api/student/session/1/questions \
+  -H "Authorization: Bearer {TOKEN}"
+
+# 7. Soumettre des réponses (plusieurs types)lisées
 - **Framework**: Laravel 11.x
 - **Base de données**: SQLite (développement) / PostgreSQL (production)
 - **Authentification**: Laravel Sanctum
@@ -257,13 +327,93 @@ POST   /api/teacher/sessions/clean-duplicates # Nettoyer doublons
 
 #### Résultats
 ```
-GET    /api/teacher/quiz-sessions/{quizSessionId}/results  # Résultats d'une session
-GET    /api/teacher/results/{id}               # Détails résultat
-PUT    /api/teacher/results/{id}               # Modifier résultat
-PUT    /api/teacher/results/{resultId}/responses/{responseId} # Modifier réponse
+GET    /api/teacher/quiz-sessions/{quizSessionId}/results  # Liste des résultats d'une session
+GET    /api/teacher/results/{id}               # Détails d'un résultat étudiant
+PUT    /api/teacher/results/{id}               # Modifier un résultat global
+PUT    /api/teacher/results/{resultId}/responses/{responseId} # Corriger une réponse spécifique
 POST   /api/teacher/results/{id}/mark-graded   # Marquer comme corrigé
-POST   /api/teacher/results/{id}/publish       # Publier résultat
+POST   /api/teacher/results/{id}/publish       # Publier le résultat
 GET    /api/teacher/quiz/{quizId}/results      # Tous les résultats d'un quiz
+```
+
+### 📊 **Gestion des Résultats (Enseignant)**
+
+#### 1. Lister les résultats d'une session
+```bash
+curl -X GET http://localhost:8000/api/teacher/quiz-sessions/8/results \
+  -H "Authorization: Bearer {TOKEN}"
+```
+
+**Réponse :**
+```json
+[
+  {
+    "id": 5,
+    "student_id": 7,
+    "student": {
+      "id": 7,
+      "name": "Samir PEREIRA",
+      "email": "samirpereira07@gmail.com"
+    },
+    "total_points": 25.0,
+    "max_points": 40.0,
+    "percentage": 62.5,
+    "status": "submitted",
+    "started_at": "2025-09-30T01:12:00.000000Z",
+    "submitted_at": "2025-09-30T01:30:00.000000Z"
+  }
+]
+```
+
+#### 2. Voir les détails d'un résultat
+```bash
+curl -X GET http://localhost:8000/api/teacher/results/5 \
+  -H "Authorization: Bearer {TOKEN}"
+```
+
+**Réponse :** Détails complets du résultat + réponses de l'étudiant.
+
+#### 3. Corriger une réponse spécifique
+```bash
+curl -X PUT http://localhost:8000/api/teacher/results/5/responses/15 \
+  -H "Authorization: Bearer {TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "is_correct": true,
+    "points_earned": 2.0,
+    "teacher_comment": "Bonne réponse"
+  }'
+```
+
+#### 4. Modifier le résultat global
+```bash
+curl -X PUT http://localhost:8000/api/teacher/results/5 \
+  -H "Authorization: Bearer {TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "total_points": 30.0,
+    "teacher_feedback": "Bon travail général"
+  }'
+```
+
+#### 5. Marquer comme corrigé
+```bash
+curl -X POST http://localhost:8000/api/teacher/results/5/mark-graded \
+  -H "Authorization: Bearer {TOKEN}"
+```
+
+#### 6. Publier le résultat
+```bash
+curl -X POST http://localhost:8000/api/teacher/results/5/publish \
+  -H "Authorization: Bearer {TOKEN}"
+```
+
+#### Historique
+```
+GET    /api/teacher/history                    # Historique complet
+GET    /api/teacher/history/quizzes            # Historique des quiz
+GET    /api/teacher/history/sessions           # Historique des sessions
+GET    /api/teacher/history/results            # Historique des résultats
 ```
 
 ### 👨‍🎓 **Étudiant**
@@ -274,6 +424,20 @@ POST   /api/student/session/join                      # Rejoindre une session
 GET    /api/student/session/{sessionId}/questions     # Questions de la session
 GET    /api/student/session/{sessionId}/questions/{questionId} # Question spécifique
 GET    /api/student/session/{sessionId}/progress      # Progrès dans la session
+```
+
+#### Gestion du Profil
+```
+GET    /api/student/profile                           # Voir son profil
+PUT    /api/student/profile                           # Modifier son profil
+POST   /api/student/profile/change-password           # Changer mot de passe
+POST   /api/student/profile/picture                   # Télécharger photo profil
+DELETE /api/student/profile/picture                   # Supprimer photo profil
+```
+
+#### Tableau de Bord
+```
+GET    /api/student/dashboard                         # Tableau de bord personnel
 ```
 
 #### Soumission des Réponses
@@ -407,7 +571,37 @@ curl -X POST http://localhost:8000/api/student/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"student@school.com","password":"password"}'
 
-# 2. Rejoindre une session
+# 2. Voir son profil
+curl -X GET http://localhost:8000/api/student/profile \
+  -H "Authorization: Bearer {TOKEN}"
+
+# 3. Modifier son profil
+curl -X PUT http://localhost:8000/api/student/profile \
+  -H "Authorization: Bearer {TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "phone": "0123456789",
+    "address": "123 Rue des Étudiants",
+    "emergency_contact": "Parent Dupont",
+    "emergency_phone": "0987654321",
+    "preferences": {
+      "theme": "dark",
+      "language": "fr",
+      "notifications": true
+    }
+  }'
+
+# 4. Changer mot de passe
+curl -X POST http://localhost:8000/api/student/profile/change-password \
+  -H "Authorization: Bearer {TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "current_password": "password",
+    "password": "newpassword123",
+    "password_confirmation": "newpassword123"
+  }'
+
+# 5. Rejoindre une session
 curl -X POST http://localhost:8000/api/student/session/join \
   -H "Authorization: Bearer {TOKEN}" \
   -H "Content-Type: application/json" \
@@ -464,6 +658,22 @@ curl -X POST http://localhost:8000/api/teacher/quizzes/1/questions \
       {"text": "Marseille", "is_correct": false}
     ]
   }'
+
+# 4. Voir l'historique complet
+curl -X GET http://localhost:8000/api/teacher/history \
+  -H "Authorization: Bearer {TOKEN}"
+
+# 5. Voir l'historique des quiz
+curl -X GET http://localhost:8000/api/teacher/history/quizzes \
+  -H "Authorization: Bearer {TOKEN}"
+
+# 6. Voir l'historique des sessions
+curl -X GET http://localhost:8000/api/teacher/history/sessions \
+  -H "Authorization: Bearer {TOKEN}"
+
+# 7. Voir l'historique des résultats
+curl -X GET http://localhost:8000/api/teacher/history/results \
+  -H "Authorization: Bearer {TOKEN}"
 ```
 
 ### 🏢 Test Complet - Côté Administrateur
@@ -486,7 +696,83 @@ curl -X GET http://localhost:8000/api/admin/quizzes/statistics \
   -H "Authorization: Bearer {TOKEN}"
 ```
 
-## 📊 Modèles de Données
+## 📊 Tableau de Bord Étudiant
+
+Le tableau de bord fournit une vue d'ensemble complète des activités et performances de l'étudiant :
+
+### 📈 Statistiques Générales
+- Nombre total de quiz passés
+- Score moyen global
+- Meilleur et pire score
+- Temps total passé sur les quiz
+- Répartition des performances (excellent, bon, moyen, faible)
+
+### 🏆 Résultats Récents
+- Liste des 10 derniers résultats publiés
+- Détails : titre du quiz, matière, score, note, temps passé
+- Date de soumission
+
+### ⚡ Sessions Actives
+- Quiz en cours de réalisation
+- Progression (questions répondues/total)
+- Temps restant avant expiration
+- Code de session et titre du quiz
+
+### 📅 Sessions à Venir
+- Sessions de quiz disponibles à rejoindre
+- Informations : titre, matière, horaires
+- Temps avant ouverture
+
+### 📚 Progression par Matière
+- Moyenne par matière
+- Nombre de quiz passés par matière
+- Meilleur et pire score par matière
+- Niveau de performance (excellent, bon, moyen, etc.)
+
+### ⏳ Quiz en Cours
+- Quiz commencés mais non terminés
+- Avancement détaillé
+- Temps déjà passé
+- Temps restant
+
+## 📚 Historique Enseignant
+
+L'historique enseignant fournit une vue complète de toutes les activités pédagogiques de l'enseignant :
+
+### 📊 Statistiques Globales
+- Nombre total de quiz créés (publiés/brouillons)
+- Nombre total de sessions organisées (actives/terminées)
+- Nombre total de résultats (corrigés/publiés)
+- Score moyen des étudiants
+- Temps total passé par les étudiants
+
+### 📝 Historique des Quiz
+- Liste paginée de tous les quiz créés
+- Statut de chaque quiz (publié/brouillon)
+- Nombre de sessions et participants par quiz
+- Score moyen obtenu
+- Date de création et modification
+
+### 🎯 Historique des Sessions
+- Liste paginée des sessions de quiz organisées
+- Statut des sessions (active/terminée/annulée)
+- Nombre de participants et taux de completion
+- Score moyen de la session
+- Période d'activité
+
+### 📈 Historique des Résultats
+- Liste paginée de tous les résultats des étudiants
+- Détails des performances individuelles
+- Informations sur l'étudiant et le quiz
+- Statut de correction et publication
+- Possibilité de filtrage et recherche
+
+### 🔔 Activité Récente
+- Chronologie des dernières actions
+- Créations de quiz et sessions
+- Publications de résultats
+- Corrections effectuées
+- Activités des 15 derniers jours
 
 ### Relations principales
 - **Institution** → **Formation** → **Classe** → **Student**

@@ -7,11 +7,17 @@ use App\Models\Result;
 use App\Models\StudentResponse;
 use Illuminate\Http\Request;
 
+/**
+ * Contrôleur pour la gestion des résultats de quiz et des réponses des étudiants.
+ * Permet aux enseignants de consulter, corriger et publier les résultats.
+ */
 class ResultController extends Controller
 {
     /**
-     * Liste des résultats d’une session donnée
-     * GET /api/results/session/{quizSessionId}
+     * Liste des résultats d'une session donnée.
+     *
+     * @param int $quizSessionId L'ID de la session de quiz
+     * @return \Illuminate\Http\JsonResponse Liste des résultats avec informations sur les étudiants
      */
     public function index($quizSessionId)
     {
@@ -23,8 +29,10 @@ class ResultController extends Controller
     }
 
     /**
-     * Détails du résultat d’un étudiant, avec réponses
-     * GET /api/results/{id}
+     * Détails du résultat d'un étudiant, avec ses réponses.
+     *
+     * @param int $id L'ID du résultat
+     * @return \Illuminate\Http\JsonResponse Détails du résultat et réponses de l'étudiant
      */
     public function show($id)
     {
@@ -32,7 +40,7 @@ class ResultController extends Controller
 
         $studentResponses = StudentResponse::where('student_id', $result->student_id)
                             ->where('quiz_session_id', $result->quiz_session_id)
-                            ->with('question.options')
+                            ->with('question')
                             ->get();
 
         $result->student_responses = $studentResponses;
@@ -41,10 +49,11 @@ class ResultController extends Controller
     }
 
     /**
-     * Récupère tous les résultats pour un quiz avec les réponses des étudiants
-     * GET /api/results/quiz/{quizId}
+     * Récupère tous les résultats pour une session de quiz avec les réponses des étudiants.
+     *
+     * @param int $quizSessionId L'ID de la session de quiz
+     * @return \Illuminate\Http\JsonResponse Liste des résultats avec réponses
      */
-    // Dans ResultController.php
     public function allResultsForQuiz($quizSessionId)
     {
         $results = Result::with(['student', 'studentResponses'])
@@ -55,8 +64,11 @@ class ResultController extends Controller
     }
 
     /**
-     * Corriger / mettre à jour un résultat global (points, feedback, etc.)
-     * PUT /api/results/{id}
+     * Corriger / mettre à jour un résultat global (points, feedback, etc.).
+     *
+     * @param Request $request La requête contenant les données de mise à jour
+     * @param int $id L'ID du résultat
+     * @return \Illuminate\Http\JsonResponse Message de succès et résultat mis à jour
      */
     public function update(Request $request, $id)
     {
@@ -77,8 +89,12 @@ class ResultController extends Controller
     }
 
     /**
-     * Corriger la réponse d’un étudiant à une question
-     * PUT /api/results/{resultId}/responses/{responseId}
+     * Corriger la réponse d'un étudiant à une question spécifique.
+     *
+     * @param Request $request La requête contenant les corrections
+     * @param int $resultId L'ID du résultat
+     * @param int $responseId L'ID de la réponse
+     * @return \Illuminate\Http\JsonResponse Message de succès et réponse corrigée
      */
     public function updateResponse(Request $request, $resultId, $responseId)
     {
@@ -103,8 +119,10 @@ class ResultController extends Controller
     }
 
     /**
-     * Marquer un résultat comme corrigé (graded)
-     * POST /api/results/{id}/mark-graded
+     * Marquer un résultat comme corrigé (status: graded).
+     *
+     * @param int $id L'ID du résultat
+     * @return \Illuminate\Http\JsonResponse Message de succès et résultat marqué
      */
     public function markAsGraded($id)
     {
@@ -118,8 +136,10 @@ class ResultController extends Controller
     }
 
     /**
-     * Publier un résultat pour l’étudiant
-     * POST /api/results/{id}/publish
+     * Publier un résultat pour que l'étudiant puisse le voir (status: published).
+     *
+     * @param int $id L'ID du résultat
+     * @return \Illuminate\Http\JsonResponse Message de succès et résultat publié
      */
     public function publish($id)
     {

@@ -25,6 +25,7 @@ use App\Http\Controllers\Auth\TeacherAuthController;
 use App\Http\Controllers\Quiz\QuizSessionController;
 use App\Http\Controllers\Quiz\QuizController;
 use App\Http\Controllers\Quiz\QuestionController;
+use App\Http\Controllers\Quiz\TeacherHistoryController;
 
 // =================== ROUTES PUBLIQUES ===================
 
@@ -216,9 +217,6 @@ Route::prefix('teacher')->name('teacher.')->middleware('auth:sanctum')->group(fu
         // Actions sur les sessions
         Route::patch('/{id}/activate', [QuizSessionController::class, 'activate'])->name('activate');
         Route::patch('/{id}/complete', [QuizSessionController::class, 'complete'])->name('complete');
-        Route::patch('/{id}/pause', [QuizSessionController::class, 'pause'])->name('pause');
-        Route::patch('/{id}/resume', [QuizSessionController::class, 'resume'])->name('resume');
-        Route::patch('/{id}/cancel', [QuizSessionController::class, 'cancel'])->name('cancel');
         
         // Gestion des doublons
         Route::get('duplicates', [QuizSessionController::class, 'detectDuplicates'])->name('duplicates.detect');
@@ -263,10 +261,24 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 
+use App\Http\Controllers\Student\StudentProfileController;
 use App\Http\Controllers\Student\StudentResponseController;
+use App\Http\Controllers\Student\StudentDashboardController;
 
 // Groupe de routes pour étudiants avec middleware auth
 Route::middleware(['auth:sanctum'])->prefix('student')->group(function () {
+
+    // ===== PROFIL ÉTUDIANT =====
+    Route::prefix('profile')->group(function () {
+        Route::get('/', [StudentProfileController::class, 'show'])->name('student.profile.show');
+        Route::put('/', [StudentProfileController::class, 'update'])->name('student.profile.update');
+        Route::post('/change-password', [StudentProfileController::class, 'changePassword'])->name('student.profile.change_password');
+        Route::post('/picture', [StudentProfileController::class, 'uploadProfilePicture'])->name('student.profile.upload_picture');
+        Route::delete('/picture', [StudentProfileController::class, 'deleteProfilePicture'])->name('student.profile.delete_picture');
+    });
+
+    // ===== TABLEAU DE BORD ÉTUDIANT =====
+    Route::get('/dashboard', [StudentDashboardController::class, 'index'])->name('student.dashboard');
 
     // Soumettre les réponses d'une session (Result)
     Route::post('/results/{resultId}/responses', [StudentResponseController::class, 'submitResponses'])
@@ -292,6 +304,14 @@ Route::middleware(['auth:sanctum'])->prefix('teacher')->group(function () {
     Route::post('results/{id}/mark-graded', [ResultController::class, 'markAsGraded']);
     Route::post('results/{id}/publish', [ResultController::class, 'publish']);
     Route::get('quiz/{quizId}/results', [ResultController::class, 'allResultsForQuiz']); 
+
+    // ===== HISTORIQUE ENSEIGNANT =====
+    Route::prefix('history')->name('history.')->group(function () {
+        Route::get('/', [TeacherHistoryController::class, 'index'])->name('index');
+        Route::get('/quizzes', [TeacherHistoryController::class, 'quizHistory'])->name('quizzes');
+        Route::get('/sessions', [TeacherHistoryController::class, 'sessionHistory'])->name('sessions');
+        Route::get('/results', [TeacherHistoryController::class, 'resultsHistory'])->name('results');
+    });
 });
 
 
