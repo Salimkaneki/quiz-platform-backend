@@ -28,6 +28,8 @@ class UserFactory extends Factory
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
+            'account_type' => 'student', // Default to student
+            'is_active' => true,
             'remember_token' => Str::random(10),
         ];
     }
@@ -39,6 +41,36 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'email_verified_at' => null,
+        ]);
+    }
+
+    /**
+     * Create a student user
+     */
+    public function student(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'account_type' => 'student',
+        ]);
+    }
+
+    /**
+     * Create a teacher user
+     */
+    public function teacher(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'account_type' => 'teacher',
+        ]);
+    }
+
+    /**
+     * Create an admin user
+     */
+    public function admin(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'account_type' => 'admin',
         ]);
     }
 }

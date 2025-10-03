@@ -15,8 +15,8 @@ class StudentSessionController extends Controller
      */
     public function index()
     {
-        $student = Auth::user()->student;
-        if (!$student) {
+        $user = Auth::user();
+        if (!$user || $user->account_type !== 'student') {
             return response()->json(['error' => 'Accès réservé aux étudiants'], 403);
         }
 
@@ -59,6 +59,7 @@ class StudentSessionController extends Controller
             'total' => $sessions->count()
         ]);
     }
+
     /**
      * Rejoindre une session via son code
      */
@@ -68,8 +69,8 @@ class StudentSessionController extends Controller
             'session_code' => 'required|string',
         ]);
 
-        $student = Auth::user()->student;
-        if (!$student) {
+        $user = Auth::user();
+        if (!$user || $user->account_type !== 'student') {
             return response()->json(['error' => 'Accès réservé aux étudiants'], 403);
         }
 
@@ -99,8 +100,8 @@ class StudentSessionController extends Controller
         // Vérifier l'accès de l'étudiant si session restreinte
         if ($session->access_type === 'restricted') {
             $allowedIds = $session->allowed_students ?? [];
-            if (!in_array($student->id, $allowedIds)) {
-                return response()->json(['error' => 'Vous n’êtes pas autorisé à rejoindre cette session'], 403);
+            if (!in_array($user->id, $allowedIds)) {
+                return response()->json(['error' => 'Vous n\'êtes pas autorisé à rejoindre cette session'], 403);
             }
         }
 
@@ -116,7 +117,7 @@ class StudentSessionController extends Controller
         $result = Result::firstOrCreate(
             [
                 'quiz_session_id' => $session->id,
-                'student_id' => $student->id
+                'student_id' => $user->id  // Utiliser $user->id au lieu de $student->id
             ],
             [
                 'status' => Result::STATUS_IN_PROGRESS,
@@ -155,14 +156,14 @@ class StudentSessionController extends Controller
      */
     public function getQuestions($sessionId)
     {
-        $student = Auth::user()->student;
-        if (!$student) {
+        $user = Auth::user();
+        if (!$user || $user->account_type !== 'student') {
             return response()->json(['error' => 'Accès réservé aux étudiants'], 403);
         }
 
         // Vérifier que l'étudiant participe à cette session
         $result = Result::where('quiz_session_id', $sessionId)
-            ->where('student_id', $student->id)
+            ->where('student_id', $user->id)  // Utiliser $user->id
             ->first();
 
         if (!$result) {
@@ -219,14 +220,14 @@ class StudentSessionController extends Controller
      */
     public function getQuestion($sessionId, $questionId)
     {
-        $student = Auth::user()->student;
-        if (!$student) {
+        $user = Auth::user();
+        if (!$user || $user->account_type !== 'student') {
             return response()->json(['error' => 'Accès réservé aux étudiants'], 403);
         }
 
         // Vérifier que l'étudiant participe à cette session
         $result = Result::where('quiz_session_id', $sessionId)
-            ->where('student_id', $student->id)
+            ->where('student_id', $user->id)  // Utiliser $user->id
             ->first();
 
         if (!$result) {
@@ -239,7 +240,7 @@ class StudentSessionController extends Controller
 
         // Vérifier si l'étudiant a déjà répondu à cette question
         $existingResponse = \App\Models\StudentResponse::where('quiz_session_id', $sessionId)
-            ->where('student_id', $student->id)
+            ->where('student_id', $user->id)  // Utiliser $user->id
             ->where('question_id', $questionId)
             ->first();
 
@@ -272,19 +273,19 @@ class StudentSessionController extends Controller
      */
     public function getProgress($sessionId)
     {
-        $student = Auth::user()->student;
-        if (!$student) {
+        $user = Auth::user();
+        if (!$user || $user->account_type !== 'student') {
             return response()->json(['error' => 'Accès réservé aux étudiants'], 403);
         }
 
         $result = Result::where('quiz_session_id', $sessionId)
-            ->where('student_id', $student->id)
+            ->where('student_id', $user->id)  // Utiliser $user->id
             ->with('quizSession.quiz.questions')
             ->firstOrFail();
 
         $totalQuestions = $result->quizSession->quiz->questions->count();
         $answeredQuestions = \App\Models\StudentResponse::where('quiz_session_id', $sessionId)
-            ->where('student_id', $student->id)
+            ->where('student_id', $user->id)  // Utiliser $user->id
             ->count();
 
         $progress = [

@@ -17,17 +17,22 @@ class StudentProfileController extends Controller
      */
     public function show()
     {
-        $student = Auth::user()->student;
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['error' => 'Non authentifié'], 401);
+        }
+
+        $student = $user->student;
         if (!$student) {
             return response()->json(['error' => 'Accès réservé aux étudiants'], 403);
         }
 
         return response()->json([
-            'student' => $student->load(['user', 'class', 'class.formation']),
+            'student' => $student->load(['user', 'classe', 'classe.formation', 'classe.formation.institution']),
             'user' => $student->user,
-            'class' => $student->class,
-            'formation' => $student->class?->formation,
-            'institution' => $student->class?->formation?->institution
+            'class' => $student->classe,
+            'formation' => $student->classe?->formation,
+            'institution' => $student->classe?->formation?->institution
         ]);
     }
 
@@ -37,7 +42,12 @@ class StudentProfileController extends Controller
      */
     public function update(Request $request)
     {
-        $student = Auth::user()->student;
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['error' => 'Non authentifié'], 401);
+        }
+
+        $student = $user->student;
         if (!$student) {
             return response()->json(['error' => 'Accès réservé aux étudiants'], 403);
         }
@@ -45,7 +55,7 @@ class StudentProfileController extends Controller
         $request->validate([
             'first_name' => 'sometimes|string|max:255',
             'last_name' => 'sometimes|string|max:255',
-            'date_of_birth' => 'sometimes|date|before:today',
+            'birth_date' => 'sometimes|date|before:today',
             'phone' => 'sometimes|nullable|string|max:20',
             'address' => 'sometimes|nullable|string|max:500',
             'emergency_contact' => 'sometimes|nullable|string|max:255',
@@ -66,7 +76,7 @@ class StudentProfileController extends Controller
 
         // Mettre à jour les informations spécifiques à l'étudiant
         $studentData = $request->only([
-            'first_name', 'last_name', 'date_of_birth', 'phone',
+            'first_name', 'last_name', 'birth_date', 'phone',
             'address', 'emergency_contact', 'emergency_phone',
             'medical_info', 'preferences'
         ]);
@@ -75,7 +85,7 @@ class StudentProfileController extends Controller
 
         return response()->json([
             'message' => 'Profil mis à jour avec succès',
-            'student' => $student->fresh()->load(['user', 'class', 'class.formation'])
+            'student' => $student->fresh()->load(['user', 'classe', 'classe.formation'])
         ]);
     }
 
@@ -86,6 +96,9 @@ class StudentProfileController extends Controller
     public function changePassword(Request $request)
     {
         $user = Auth::user();
+        if (!$user) {
+            return response()->json(['error' => 'Non authentifié'], 401);
+        }
 
         $request->validate([
             'current_password' => 'required|string',
@@ -122,7 +135,12 @@ class StudentProfileController extends Controller
      */
     public function uploadProfilePicture(Request $request)
     {
-        $student = Auth::user()->student;
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['error' => 'Non authentifié'], 401);
+        }
+
+        $student = $user->student;
         if (!$student) {
             return response()->json(['error' => 'Accès réservé aux étudiants'], 403);
         }
@@ -132,6 +150,12 @@ class StudentProfileController extends Controller
         ]);
 
         if ($request->hasFile('profile_picture')) {
+            // Créer le dossier s'il n'existe pas
+            $uploadPath = public_path('uploads/profiles');
+            if (!file_exists($uploadPath)) {
+                mkdir($uploadPath, 0755, true);
+            }
+
             // Supprimer l'ancienne photo si elle existe
             if ($student->profile_picture && file_exists(public_path($student->profile_picture))) {
                 unlink(public_path($student->profile_picture));
@@ -139,7 +163,7 @@ class StudentProfileController extends Controller
 
             $file = $request->file('profile_picture');
             $filename = 'profile_' . $student->id . '_' . time() . '.' . $file->getClientOriginalExtension();
-            $path = $file->move(public_path('uploads/profiles'), $filename);
+            $file->move($uploadPath, $filename);
 
             $student->update([
                 'profile_picture' => 'uploads/profiles/' . $filename
@@ -160,7 +184,12 @@ class StudentProfileController extends Controller
      */
     public function deleteProfilePicture()
     {
-        $student = Auth::user()->student;
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['error' => 'Non authentifié'], 401);
+        }
+
+        $student = $user->student;
         if (!$student) {
             return response()->json(['error' => 'Accès réservé aux étudiants'], 403);
         }

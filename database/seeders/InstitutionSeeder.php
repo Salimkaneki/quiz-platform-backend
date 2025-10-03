@@ -37,8 +37,6 @@ class InstitutionSeeder extends Seeder
                     ]
                 ]),
                 'is_active' => true,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now()
             ],
             [
                 'name' => 'Institut Supérieur de Métiers',
@@ -62,15 +60,19 @@ class InstitutionSeeder extends Seeder
                     ]
                 ]),
                 'is_active' => true,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now()
             ]
         ];
 
-        // Utilisation de la façade DB pour insérer les données
-        DB::table('institutions')->insert($institutions);
+        $created = 0;
+        foreach ($institutions as $institutionData) {
+            $institution = \App\Models\Institution::updateOrCreate(
+                ['code' => $institutionData['code']],
+                $institutionData
+            );
+            $created++;
+        }
 
-        $this->command->info('Institutions créées avec succès!');
-        $this->command->info('Total: ' . count($institutions) . ' institutions');
+        $this->command->info('Institutions créées/mises à jour avec succès!');
+        $this->command->info('Total: ' . $created . ' institutions');
     }
 }

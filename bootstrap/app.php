@@ -14,9 +14,17 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
+            'teacher' => \App\Http\Middleware\TeacherMiddleware::class,
+            'student' => \App\Http\Middleware\StudentMiddleware::class,
             'auth' => \App\Http\Middleware\Authenticate::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, $request) {
+            if ($request->is('api/*')) {
+                return response()->json([
+                    'message' => 'Unauthenticated.',
+                ], 401);
+            }
+        });
     })->create();

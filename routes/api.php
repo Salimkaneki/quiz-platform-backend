@@ -267,7 +267,7 @@ use App\Http\Controllers\Student\StudentResponseController;
 use App\Http\Controllers\Student\StudentDashboardController;
 
 // Groupe de routes pour étudiants avec middleware auth
-Route::middleware(['auth:sanctum'])->prefix('student')->group(function () {
+Route::middleware(['auth:sanctum', 'student'])->prefix('student')->group(function () {
 
     // ===== PROFIL ÉTUDIANT =====
     Route::prefix('profile')->group(function () {
@@ -296,7 +296,7 @@ Route::middleware(['auth:sanctum'])->prefix('student')->group(function () {
 
 use App\Http\Controllers\Quiz\ResultController;
 
-Route::middleware(['auth:sanctum'])->prefix('teacher')->group(function () {
+Route::middleware(['auth:sanctum', 'teacher'])->prefix('teacher')->group(function () {
     
     Route::get('quiz-sessions/{quizSessionId}/results', [ResultController::class, 'index']);
     Route::get('results/{id}', [ResultController::class, 'show']);
