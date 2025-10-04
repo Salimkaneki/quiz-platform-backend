@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\Classes;
 use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
+use App\Notifications\StudentWelcomeNotification;
 
 class StudentSeeder extends Seeder
 {
@@ -208,6 +209,16 @@ class StudentSeeder extends Seeder
                     'student_number' => $studentNumber,
                 ])
             );
+
+            // Envoi de l'email de bienvenue (seulement pour les nouveaux étudiants)
+            if ($student->wasRecentlyCreated) {
+                try {
+                    // $student->notify(new StudentWelcomeNotification($student, 'password123'));
+                    $this->command->info("Email désactivé temporairement pour {$student->email}");
+                } catch (\Exception $e) {
+                    $this->command->error("Erreur envoi email à {$student->email}: {$e->getMessage()}");
+                }
+            }
 
             $created++;
         }

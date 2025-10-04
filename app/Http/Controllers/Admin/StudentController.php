@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Exception;
+use App\Notifications\StudentWelcomeNotification;
 
 class StudentController extends Controller
 {
@@ -159,6 +160,22 @@ class StudentController extends Controller
 
             // Chargement des relations pour la réponse
             $student->load(['classe.formation', 'user']);
+
+            // Envoi de l'email de bienvenue
+            try {
+                // $student->notify(new StudentWelcomeNotification($student, $defaultPassword));
+                Log::info('StudentController@store - Email de bienvenue désactivé temporairement', [
+                    'student_id' => $student->id,
+                    'email' => $student->email
+                ]);
+            } catch (Exception $e) {
+                Log::error('StudentController@store - Erreur envoi email', [
+                    'student_id' => $student->id,
+                    'email' => $student->email,
+                    'error' => $e->getMessage()
+                ]);
+                // Ne pas échouer la création pour autant
+            }
 
             $response = [
                 'message' => 'Étudiant créé avec succès',

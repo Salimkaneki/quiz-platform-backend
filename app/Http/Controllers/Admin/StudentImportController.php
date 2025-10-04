@@ -9,6 +9,7 @@ use App\Models\Administrator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use App\Notifications\StudentWelcomeNotification;
 
 class StudentImportController extends Controller
 {
@@ -151,7 +152,9 @@ class StudentImportController extends Controller
                 }
 
                 try {
-                    Student::create([
+                    $defaultPassword = 'Motdepasse123';
+                    
+                    $student = Student::create([
                         'student_number' => $data['student_number'],
                         'first_name' => $data['first_name'],
                         'last_name' => $data['last_name'],
@@ -161,7 +164,25 @@ class StudentImportController extends Controller
                         'class_id' => $data['class_id'],
                         'institution_id' => $admin->institution_id,
                     ]);
+                    
                     $imported++;
+
+                    // Envoi de l'email de bienvenue
+                    try {
+                        // $student->notify(new StudentWelcomeNotification($student, $defaultPassword));
+                        Log::info('StudentImportController@import - Email désactivé temporairement', [
+                            'student_id' => $student->id,
+                            'email' => $student->email
+                        ]);
+                    } catch (\Exception $e) {
+                        Log::error('StudentImportController@import - Erreur envoi email', [
+                            'student_id' => $student->id,
+                            'email' => $student->email,
+                            'error' => $e->getMessage()
+                        ]);
+                        // Ne pas échouer l'import pour autant
+                    }
+                    
                 } catch (\Exception $e) {
                     Log::error('Erreur création étudiant', ['data' => $data, 'error' => $e->getMessage()]);
                     $errors[] = [
