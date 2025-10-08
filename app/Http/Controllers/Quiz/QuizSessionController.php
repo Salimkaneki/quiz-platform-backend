@@ -150,6 +150,11 @@ class QuizSessionController extends Controller
         return $this->changeStatus($id, 'active', 'completed', 'terminée', 'completed_at');
     }
 
+    public function cancel($id)
+    {
+        return $this->changeStatus($id, ['scheduled', 'active'], 'cancelled', 'annulée');
+    }
+
     // CORRECTION: Amélioration de la méthode changeStatus
     private function changeStatus($id, $expectedStatus, $newStatus, $successMessage, $timestampField = null)
     {
@@ -198,7 +203,13 @@ class QuizSessionController extends Controller
     {
         try {
             $teacher = $this->getAuthenticatedTeacher();
-            $session = QuizSession::findOrFail($id);
+            $session = QuizSession::find($id);
+
+            if (!$session) {
+                return response()->json([
+                    'error' => 'Session non trouvée'
+                ], 404);
+            }
 
             $this->authorizeTeacherResource($session, 'session');
 

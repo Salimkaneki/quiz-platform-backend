@@ -56,9 +56,18 @@ class ResultController extends Controller
      */
     public function allResultsForQuiz($quizSessionId)
     {
-        $results = Result::with(['student', 'studentResponses'])
+        $results = Result::with('student')
                         ->where('quiz_session_id', $quizSessionId)
                         ->get();
+
+        // Attacher manuellement les réponses pour chaque résultat
+        foreach ($results as $result) {
+            $studentResponses = StudentResponse::where('student_id', $result->student_id)
+                                ->where('quiz_session_id', $result->quiz_session_id)
+                                ->with('question')
+                                ->get();
+            $result->student_responses = $studentResponses;
+        }
 
         return response()->json($results);
     }

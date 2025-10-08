@@ -1,0 +1,478 @@
+{
+  "info": {
+    "name": "🔐 Administration - Quiz Platform",
+    "description": "Endpoints pour les administrateurs pédagogiques",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{auth_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000/api",
+      "type": "string"
+    },
+    {
+      "key": "auth_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "🔑 Authentification Admin",
+      "item": [
+        {
+          "name": "POST - Login Admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@univ-lome.tg\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/login",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "login"]
+            }
+          }
+        },
+        {
+          "name": "GET - Mon profil Admin",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/me",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "me"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "👨‍🏫 Gestion Enseignants",
+      "item": [
+        {
+          "name": "GET - Liste enseignants",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/teachers",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "teachers"]
+            }
+          }
+        },
+        {
+          "name": "POST - Créer enseignant",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": 1,\n  \"grade\": \"Professeur\",\n  \"specialty\": \"Informatique\",\n  \"hire_date\": \"2020-01-01\",\n  \"is_permanent\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/teachers",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "teachers"]
+            }
+          }
+        },
+        {
+          "name": "GET - Utilisateurs disponibles",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/teachers/users",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "teachers", "users"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🎓 Gestion Formations",
+      "item": [
+        {
+          "name": "GET - Liste formations",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/formations",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "formations"]
+            }
+          }
+        },
+        {
+          "name": "POST - Créer formation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Médecine\",\n  \"description\": \"Formation en médecine\",\n  \"duration_years\": 7,\n  \"institution_id\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/formations",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "formations"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📖 Gestion Matières",
+      "item": [
+        {
+          "name": "GET - Liste matières",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/subjects",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "subjects"]
+            }
+          }
+        },
+        {
+          "name": "POST - Créer matière",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Algorithmique\",\n  \"code\": \"ALGO101\",\n  \"description\": \"Introduction à l'algorithmique\",\n  \"coefficient\": 3\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/subjects",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "subjects"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🏫 Gestion Classes",
+      "item": [
+        {
+          "name": "GET - Liste classes",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/classes",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "classes"]
+            }
+          }
+        },
+        {
+          "name": "POST - Créer classe",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"L1 Informatique\",\n  \"level\": \"Licence 1\",\n  \"formation_id\": 1,\n  \"academic_year\": \"2025-2026\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/classes",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "classes"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "👨‍🎓 Gestion Étudiants",
+      "item": [
+        {
+          "name": "GET - Liste étudiants",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/students",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "students"]
+            }
+          }
+        },
+        {
+          "name": "POST - Créer étudiant",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"student_number\": \"ETU2025-001\",\n  \"first_name\": \"Jean\",\n  \"last_name\": \"Dupont\",\n  \"email\": \"jean.dupont@univ-lome.tg\",\n  \"birth_date\": \"2000-01-01\",\n  \"phone\": \"+228 90 00 00 00\",\n  \"class_id\": 1,\n  \"metadata\": {\n    \"gender\": \"M\",\n    \"address\": \"Lomé\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/students",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "students"]
+            }
+          }
+        },
+        {
+          "name": "POST - Importer étudiants (CSV)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "csv_file",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/students/import",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "students", "import"]
+            }
+          }
+        },
+        {
+          "name": "GET - Étudiants par classe",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/students/by-class/1",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "students", "by-class", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔗 Attributions Enseignant-Matière",
+      "item": [
+        {
+          "name": "GET - Liste attributions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/teacher-subjects",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "teacher-subjects"]
+            }
+          }
+        },
+        {
+          "name": "POST - Créer attribution",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"teacher_id\": 1,\n  \"subject_id\": 1,\n  \"class_id\": 1,\n  \"academic_year\": \"2025-2026\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/teacher-subjects",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "teacher-subjects"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📝 Quiz (Vue Admin)",
+      "item": [
+        {
+          "name": "GET - Liste quiz",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/quizzes",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "quizzes"]
+            }
+          }
+        },
+        {
+          "name": "GET - Statistiques quiz",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/quizzes/statistics",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "quizzes", "statistics"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📊 Dashboard Admin",
+      "item": [
+        {
+          "name": "GET - Dashboard data",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/dashboard",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "dashboard"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,393 @@
+{
+  "info": {
+    "name": "Teacher API Collection",
+    "description": "Collection des endpoints pour les enseignants de la plateforme de quiz",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{teacher_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000/api"
+    },
+    {
+      "key": "teacher_token",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentification",
+      "item": [
+        {
+          "name": "Login Enseignant",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"teacher@example.com\",\n  \"password\": \"password\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/teacher/login",
+              "host": ["{{base_url}}"],
+              "path": ["teacher", "login"]
+            }
+          }
+        },
+        {
+          "name": "Me (Profil)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/teacher/me",
+              "host": ["{{base_url}}"],
+              "path": ["teacher", "me"]
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/teacher/logout",
+              "host": ["{{base_url}}"],
+              "path": ["teacher", "logout"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Quizzes",
+      "item": [
+        {
+          "name": "Lister les quizzes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/teacher/quizzes",
+              "host": ["{{base_url}}"],
+              "path": ["teacher", "quizzes"]
+            }
+          }
+        },
+        {
+          "name": "Créer un quiz",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Quiz Test\",\n  \"subject_id\": 1,\n  \"description\": \"Description\",\n  \"time_limit\": 60\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/teacher/quizzes",
+              "host": ["{{base_url}}"],
+              "path": ["teacher", "quizzes"]
+            }
+          }
+        },
+        {
+          "name": "Voir un quiz",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/teacher/quizzes/1",
+              "host": ["{{base_url}}"],
+              "path": ["teacher", "quizzes", "1"]
+            }
+          }
+        },
+        {
+          "name": "Mettre à jour un quiz",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Quiz Mis à Jour\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/teacher/quizzes/1",
+              "host": ["{{base_url}}"],
+              "path": ["teacher", "quizzes", "1"]
+            }
+          }
+        },
+        {
+          "name": "Supprimer un quiz",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/teacher/quizzes/1",
+              "host": ["{{base_url}}"],
+              "path": ["teacher", "quizzes", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Sessions de Quiz",
+      "item": [
+        {
+          "name": "Lister les sessions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/teacher/sessions",
+              "host": ["{{base_url}}"],
+              "path": ["teacher", "sessions"]
+            }
+          }
+        },
+        {
+          "name": "Créer une session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quiz_id\": 1,\n  \"title\": \"Session Test\",\n  \"starts_at\": \"2025-10-06 10:00:00\",\n  \"ends_at\": \"2025-10-06 11:00:00\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/teacher/sessions",
+              "host": ["{{base_url}}"],
+              "path": ["teacher", "sessions"]
+            }
+          }
+        },
+        {
+          "name": "Voir une session",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/teacher/sessions/1",
+              "host": ["{{base_url}}"],
+              "path": ["teacher", "sessions", "1"]
+            }
+          }
+        },
+        {
+          "name": "Mettre à jour une session",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Session Mise à Jour\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/teacher/sessions/1",
+              "host": ["{{base_url}}"],
+              "path": ["teacher", "sessions", "1"]
+            }
+          }
+        },
+        {
+          "name": "Activer une session",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/teacher/sessions/1/activate",
+              "host": ["{{base_url}}"],
+              "path": ["teacher", "sessions", "1", "activate"]
+            }
+          }
+        },
+        {
+          "name": "Terminer une session",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/teacher/sessions/1/complete",
+              "host": ["{{base_url}}"],
+              "path": ["teacher", "sessions", "1", "complete"]
+            }
+          }
+        },
+        {
+          "name": "Annuler une session",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/teacher/sessions/1/cancel",
+              "host": ["{{base_url}}"],
+              "path": ["teacher", "sessions", "1", "cancel"]
+            }
+          }
+        },
+        {
+          "name": "Supprimer une session",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/teacher/sessions/1",
+              "host": ["{{base_url}}"],
+              "path": ["teacher", "sessions", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Questions",
+      "item": [
+        {
+          "name": "Lister les questions d'un quiz",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/teacher/quizzes/1/questions",
+              "host": ["{{base_url}}"],
+              "path": ["teacher", "quizzes", "1", "questions"]
+            }
+          }
+        },
+        {
+          "name": "Créer une question",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question_text\": \"Question ?\",\n  \"type\": \"multiple_choice\",\n  \"options\": [{\"text\": \"A\", \"is_correct\": true}, {\"text\": \"B\", \"is_correct\": false}],\n  \"points\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/teacher/quizzes/1/questions",
+              "host": ["{{base_url}}"],
+              "path": ["teacher", "quizzes", "1", "questions"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Résultats",
+      "item": [
+        {
+          "name": "Lister les résultats d'une session",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/teacher/quiz-sessions/1/results",
+              "host": ["{{base_url}}"],
+              "path": ["teacher", "quiz-sessions", "1", "results"]
+            }
+          }
+        },
+        {
+          "name": "Voir un résultat",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/teacher/results/1",
+              "host": ["{{base_url}}"],
+              "path": ["teacher", "results", "1"]
+            }
+          }
+        },
+        {
+          "name": "Mettre à jour un résultat",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"teacher_feedback\": \"Bien joué !\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/teacher/results/1",
+              "host": ["{{base_url}}"],
+              "path": ["teacher", "results", "1"]
+            }
+          }
+        },
+        {
+          "name": "Marquer comme corrigé",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/teacher/results/1/mark-graded",
+              "host": ["{{base_url}}"],
+              "path": ["teacher", "results", "1", "mark-graded"]
+            }
+          }
+        },
+        {
+          "name": "Publier un résultat",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/teacher/results/1/publish",
+              "host": ["{{base_url}}"],
+              "path": ["teacher", "results", "1", "publish"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

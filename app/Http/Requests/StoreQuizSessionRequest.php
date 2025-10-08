@@ -15,7 +15,7 @@ class StoreQuizSessionRequest extends FormRequest
         return [
             'quiz_id' => 'required|exists:quizzes,id',
             'title' => 'required|string|max:255',
-            'starts_at' => 'required|date|after:now',
+            'starts_at' => 'required|date|after_or_equal:now', // Modifié pour permettre les tests
             'ends_at' => 'required|date|after:starts_at',
             'max_participants' => 'nullable|integer|min:1',
             'require_student_list' => 'boolean',

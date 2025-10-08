@@ -195,7 +195,7 @@ Route::prefix('teacher')->name('teacher.')->group(function () {
 });
 
 // ===== TEACHER RESOURCES (Toutes protégées) =====
-Route::prefix('teacher')->name('teacher.')->middleware('auth:sanctum')->group(function () {
+Route::prefix('teacher')->name('teacher.')->middleware(['auth:sanctum', 'teacher'])->group(function () {
     
     // ===== QUIZZES =====
     Route::apiResource('quizzes', QuizController::class)->names([
@@ -217,6 +217,7 @@ Route::prefix('teacher')->name('teacher.')->middleware('auth:sanctum')->group(fu
         // Actions sur les sessions
         Route::patch('/{id}/activate', [QuizSessionController::class, 'activate'])->name('activate');
         Route::patch('/{id}/complete', [QuizSessionController::class, 'complete'])->name('complete');
+        Route::patch('/{id}/cancel', [QuizSessionController::class, 'cancel'])->name('cancel');
         
         // Gestion des doublons
         Route::get('duplicates', [QuizSessionController::class, 'detectDuplicates'])->name('duplicates.detect');
@@ -253,6 +254,7 @@ use App\Http\Controllers\Student\StudentSessionController;
 // Route protégée par Sanctum (auth:sanctum)
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/student/sessions', [StudentSessionController::class, 'index']);
+    Route::get('/student/sessions/{id}', [StudentSessionController::class, 'show']);
     Route::post('/student/session/join', [StudentSessionController::class, 'joinSession']);
     
     // Nouvelles routes pour la navigation dans le quiz
@@ -329,9 +331,29 @@ Route::fallback(function(){
     ], 404);
 });
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\ReportController;
+use App\Http\Controllers\Admin\NotificationController;
 
 Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     // Dashboard
     Route::get('/admin/dashboard', [DashboardController::class, 'index']);
     Route::get('/admin/dashboard/charts/{chartType}', [DashboardController::class, 'chartData']);
+    
+    // Reports - Rapports
+    Route::prefix('reports')->name('reports.')->group(function () {
+        Route::get('/sessions', [ReportController::class, 'getAvailableSessions'])->name('sessions');
+        Route::post('/sessions/{sessionId}/send', [ReportController::class, 'sendSessionReport'])->name('session.send');
+        Route::post('/periodic', [ReportController::class, 'sendPeriodicReport'])->name('periodic.send');
+    });
+
+    // Notifications de plateforme
+    Route::prefix('notifications')->name('notifications.')->group(function () {
+        Route::get('/', [NotificationController::class, 'index'])->name('index');
+        Route::get('/unread-count', [NotificationController::class, 'getUnreadCount'])->name('unread_count');
+        Route::patch('/{id}/read', [NotificationController::class, 'markAsRead'])->name('mark_read');
+        Route::patch('/bulk-read', [NotificationController::class, 'markBulkAsRead'])->name('bulk_read');
+        Route::patch('/all-read', [NotificationController::class, 'markAllAsRead'])->name('all_read');
+        Route::delete('/{id}', [NotificationController::class, 'destroy'])->name('destroy');
+        Route::post('/cleanup', [NotificationController::class, 'cleanupExpired'])->name('cleanup');
+    });
 });

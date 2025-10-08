@@ -11,6 +11,58 @@ use Illuminate\Support\Facades\Auth;
 class StudentSessionController extends Controller
 {
     /**
+     * Voir les détails d'une session pour un étudiant (s'il y participe)
+     */
+    public function show($id)
+    {
+        $user = Auth::user();
+        if (!$user || $user->account_type !== 'student') {
+            return response()->json(['error' => 'Accès réservé aux étudiants'], 403);
+        }
+
+        // Vérifier que l'étudiant participe à cette session
+        $result = Result::where('quiz_session_id', $id)
+            ->where('student_id', $user->id)
+            ->first();
+
+        if (!$result) {
+            return response()->json(['error' => 'Vous ne participez pas à cette session'], 403);
+        }
+
+        $session = QuizSession::with('quiz.subject')->findOrFail($id);
+
+        return response()->json([
+            'session' => [
+                'id' => $session->id,
+                'title' => $session->title,
+                'session_code' => $session->session_code,
+                'status' => $session->status,
+                'starts_at' => $session->starts_at,
+                'ends_at' => $session->ends_at,
+                'max_participants' => $session->max_participants,
+                'quiz' => [
+                    'id' => $session->quiz->id,
+                    'title' => $session->quiz->title,
+                    'subject' => $session->quiz->subject ? [
+                        'id' => $session->quiz->subject->id,
+                        'name' => $session->quiz->subject->name
+                    ] : null,
+                    'duration_minutes' => $session->quiz->duration_minutes
+                ]
+            ],
+            'result' => [
+                'id' => $result->id,
+                'status' => $result->status,
+                'total_points' => $result->total_points,
+                'max_points' => $result->max_points,
+                'percentage' => $result->percentage,
+                'started_at' => $result->started_at,
+                'submitted_at' => $result->submitted_at
+            ]
+        ]);
+    }
+
+    /**
      * Lister les sessions d'examen disponibles pour l'étudiant
      */
     public function index()
@@ -310,3 +362,4 @@ class StudentSessionController extends Controller
         ]);
     }
 }
+

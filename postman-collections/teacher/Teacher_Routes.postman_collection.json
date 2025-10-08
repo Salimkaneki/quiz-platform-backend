@@ -1,0 +1,293 @@
+{
+  "info": {
+    "name": "👨‍🏫 Enseignants - Quiz Platform",
+    "description": "Endpoints pour les enseignants",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{auth_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000/api",
+      "type": "string"
+    },
+    {
+      "key": "auth_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "🔑 Authentification Enseignant",
+      "item": [
+        {
+          "name": "POST - Login Enseignant",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"teacher@univ-lome.tg\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/teacher/login",
+              "host": ["{{base_url}}"],
+              "path": ["teacher", "login"]
+            }
+          }
+        },
+        {
+          "name": "GET - Mes matières",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/teacher/my-subjects",
+              "host": ["{{base_url}}"],
+              "path": ["teacher", "my-subjects"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📝 Gestion Quiz",
+      "item": [
+        {
+          "name": "GET - Mes quiz",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/teacher/quizzes",
+              "host": ["{{base_url}}"],
+              "path": ["teacher", "quizzes"]
+            }
+          }
+        },
+        {
+          "name": "POST - Créer quiz",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Quiz Algorithmique\",\n  \"description\": \"Test sur les bases de l'algorithmique\",\n  \"subject_id\": 1,\n  \"duration_minutes\": 30,\n  \"total_points\": 20,\n  \"is_active\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/teacher/quizzes",
+              "host": ["{{base_url}}"],
+              "path": ["teacher", "quizzes"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🎯 Gestion Sessions",
+      "item": [
+        {
+          "name": "GET - Mes sessions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/teacher/sessions",
+              "host": ["{{base_url}}"],
+              "path": ["teacher", "sessions"]
+            }
+          }
+        },
+        {
+          "name": "POST - Créer session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quiz_id\": 1,\n  \"class_id\": 1,\n  \"start_time\": \"2025-10-04 10:00:00\",\n  \"end_time\": \"2025-10-04 11:00:00\",\n  \"instructions\": \"Répondez à toutes les questions\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/teacher/sessions",
+              "host": ["{{base_url}}"],
+              "path": ["teacher", "sessions"]
+            }
+          }
+        },
+        {
+          "name": "PATCH - Activer session",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/teacher/sessions/1/activate",
+              "host": ["{{base_url}}"],
+              "path": ["teacher", "sessions", "1", "activate"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "❓ Gestion Questions",
+      "item": [
+        {
+          "name": "GET - Questions d'un quiz",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/teacher/quizzes/1/questions",
+              "host": ["{{base_url}}"],
+              "path": ["teacher", "quizzes", "1", "questions"]
+            }
+          }
+        },
+        {
+          "name": "POST - Ajouter question",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question_text\": \"Quelle est la complexité d'un algorithme O(n²)?\",\n  \"question_type\": \"multiple_choice\",\n  \"points\": 2,\n  \"options\": [\n    \"Linéaire\",\n    \"Quadratique\",\n    \"Exponentielle\",\n    \"Constante\"\n  ],\n  \"correct_answer\": \"Quadratique\",\n  \"explanation\": \"O(n²) signifie que le temps d'exécution croît avec le carré de la taille des données\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/teacher/quizzes/1/questions",
+              "host": ["{{base_url}}"],
+              "path": ["teacher", "quizzes", "1", "questions"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📊 Gestion Résultats",
+      "item": [
+        {
+          "name": "GET - Résultats d'une session",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/teacher/quiz-sessions/1/results",
+              "host": ["{{base_url}}"],
+              "path": ["teacher", "quiz-sessions", "1", "results"]
+            }
+          }
+        },
+        {
+          "name": "POST - Publier résultats",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/teacher/results/1/publish",
+              "host": ["{{base_url}}"],
+              "path": ["teacher", "results", "1", "publish"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📚 Historique",
+      "item": [
+        {
+          "name": "GET - Historique complet",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/teacher/history",
+              "host": ["{{base_url}}"],
+              "path": ["teacher", "history"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

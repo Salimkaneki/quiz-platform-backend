@@ -1,0 +1,255 @@
+{
+  "info": {
+    "name": "👨‍🎓 Étudiants - Quiz Platform",
+    "description": "Endpoints pour les étudiants",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{auth_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000/api",
+      "type": "string"
+    },
+    {
+      "key": "auth_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "🔑 Authentification Étudiant",
+      "item": [
+        {
+          "name": "POST - Login Étudiant",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"student@univ-lome.tg\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/student/login",
+              "host": ["{{base_url}}"],
+              "path": ["student", "login"]
+            }
+          }
+        },
+        {
+          "name": "GET - Mon profil",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/student/profile",
+              "host": ["{{base_url}}"],
+              "path": ["student", "profile"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📝 Sessions Disponibles",
+      "item": [
+        {
+          "name": "GET - Sessions actives",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/student/available-sessions",
+              "host": ["{{base_url}}"],
+              "path": ["student", "available-sessions"]
+            }
+          }
+        },
+        {
+          "name": "GET - Détails session",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/student/sessions/1",
+              "host": ["{{base_url}}"],
+              "path": ["student", "sessions", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🎯 Participation Quiz",
+      "item": [
+        {
+          "name": "POST - Rejoindre session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/student/sessions/1/join",
+              "host": ["{{base_url}}"],
+              "path": ["student", "sessions", "1", "join"]
+            }
+          }
+        },
+        {
+          "name": "GET - Questions du quiz",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/student/quiz-sessions/1/questions",
+              "host": ["{{base_url}}"],
+              "path": ["student", "quiz-sessions", "1", "questions"]
+            }
+          }
+        },
+        {
+          "name": "POST - Soumettre réponse",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question_id\": 1,\n  \"answer\": \"Quadratique\",\n  \"time_spent_seconds\": 45\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/student/quiz-sessions/1/responses",
+              "host": ["{{base_url}}"],
+              "path": ["student", "quiz-sessions", "1", "responses"]
+            }
+          }
+        },
+        {
+          "name": "POST - Terminer quiz",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/student/quiz-sessions/1/finish",
+              "host": ["{{base_url}}"],
+              "path": ["student", "quiz-sessions", "1", "finish"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📊 Résultats",
+      "item": [
+        {
+          "name": "GET - Mes résultats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/student/my-results",
+              "host": ["{{base_url}}"],
+              "path": ["student", "my-results"]
+            }
+          }
+        },
+        {
+          "name": "GET - Détails résultat",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/student/results/1",
+              "host": ["{{base_url}}"],
+              "path": ["student", "results", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📚 Historique",
+      "item": [
+        {
+          "name": "GET - Historique complet",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/student/history",
+              "host": ["{{base_url}}"],
+              "path": ["student", "history"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

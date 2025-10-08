@@ -1,0 +1,291 @@
+{
+  "info": {
+    "name": "Student API Collection",
+    "description": "Collection des endpoints pour les étudiants de la plateforme de quiz",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{student_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000/api"
+    },
+    {
+      "key": "student_token",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentification",
+      "item": [
+        {
+          "name": "Login Étudiant",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"student@example.com\",\n  \"password\": \"password\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/student/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["student", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Me (Profil)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/student/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["student", "auth", "me"]
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/student/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["student", "auth", "logout"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Sessions de Quiz",
+      "item": [
+        {
+          "name": "Lister les sessions disponibles",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/student/sessions",
+              "host": ["{{base_url}}"],
+              "path": ["student", "sessions"]
+            }
+          }
+        },
+        {
+          "name": "Voir les détails d'une session",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/student/sessions/1",
+              "host": ["{{base_url}}"],
+              "path": ["student", "sessions", "1"]
+            }
+          }
+        },
+        {
+          "name": "Rejoindre une session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"session_code\": \"ABC123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/student/session/join",
+              "host": ["{{base_url}}"],
+              "path": ["student", "session", "join"]
+            }
+          }
+        },
+        {
+          "name": "Obtenir les questions d'une session",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/student/session/1/questions",
+              "host": ["{{base_url}}"],
+              "path": ["student", "session", "1", "questions"]
+            }
+          }
+        },
+        {
+          "name": "Obtenir une question spécifique",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/student/session/1/questions/1",
+              "host": ["{{base_url}}"],
+              "path": ["student", "session", "1", "questions", "1"]
+            }
+          }
+        },
+        {
+          "name": "Obtenir la progression",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/student/session/1/progress",
+              "host": ["{{base_url}}"],
+              "path": ["student", "session", "1", "progress"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Réponses",
+      "item": [
+        {
+          "name": "Soumettre des réponses",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"responses\": [\n    {\n      \"question_id\": 1,\n      \"answer\": \"1\"\n    },\n    {\n      \"question_id\": 2,\n      \"answer\": \"true\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/student/results/1/responses",
+              "host": ["{{base_url}}"],
+              "path": ["student", "results", "1", "responses"]
+            }
+          }
+        },
+        {
+          "name": "Lister les réponses d'un résultat",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/student/results/1/responses",
+              "host": ["{{base_url}}"],
+              "path": ["student", "results", "1", "responses"]
+            }
+          }
+        },
+        {
+          "name": "Voir une réponse spécifique",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/student/results/1/responses/1",
+              "host": ["{{base_url}}"],
+              "path": ["student", "results", "1", "responses", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Profil",
+      "item": [
+        {
+          "name": "Voir le profil",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/student/profile",
+              "host": ["{{base_url}}"],
+              "path": ["student", "profile"]
+            }
+          }
+        },
+        {
+          "name": "Mettre à jour le profil",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Nouveau Prénom\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/student/profile",
+              "host": ["{{base_url}}"],
+              "path": ["student", "profile"]
+            }
+          }
+        },
+        {
+          "name": "Changer le mot de passe",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"current_password\": \"oldpass\",\n  \"password\": \"newpass\",\n  \"password_confirmation\": \"newpass\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/student/profile/change-password",
+              "host": ["{{base_url}}"],
+              "path": ["student", "profile", "change-password"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tableau de Bord",
+      "item": [
+        {
+          "name": "Voir le dashboard",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/student/dashboard",
+              "host": ["{{base_url}}"],
+              "path": ["student", "dashboard"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
