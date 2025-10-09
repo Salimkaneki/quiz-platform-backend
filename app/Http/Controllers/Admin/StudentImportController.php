@@ -4,11 +4,15 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Student;
+use App\Models\User;
 use App\Models\Classes;
 use App\Models\Administrator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
+use Exception;
 use App\Notifications\StudentWelcomeNotification;
 
 class StudentImportController extends Controller
@@ -117,7 +121,7 @@ class StudentImportController extends Controller
                     'first_name' => 'required|string|max:255',
                     'last_name' => 'required|string|max:255',
                     'birth_date' => 'required|date|date_format:Y-m-d',
-                    'email' => 'required|email|unique:students,email',
+                    'email' => 'required|email|unique:students,email|unique:users,email',
                     'phone' => 'required|string|max:20',
                     'class_id' => 'required|exists:classes,id',
                 ]);
@@ -154,33 +158,86 @@ class StudentImportController extends Controller
                 try {
                     $defaultPassword = 'Motdepasse123';
                     
-                    $student = Student::create([
-                        'student_number' => $data['student_number'],
-                        'first_name' => $data['first_name'],
-                        'last_name' => $data['last_name'],
-                        'birth_date' => $data['birth_date'],
-                        'email' => $data['email'],
-                        'phone' => $data['phone'],
-                        'class_id' => $data['class_id'],
-                        'institution_id' => $admin->institution_id,
-                    ]);
+                    // Transaction pour assurer la cohérence
+                    DB::beginTransaction();
                     
-                    $imported++;
-
-                    // Envoi de l'email de bienvenue
                     try {
-                        // $student->notify(new StudentWelcomeNotification($student, $defaultPassword));
-                        Log::info('StudentImportController@import - Email désactivé temporairement', [
-                            'student_id' => $student->id,
-                            'email' => $student->email
+                        // Création du User avec mot de passe par défaut
+                        $userData = [
+                            'name' => $data['first_name'] . ' ' . $data['last_name'],
+                            'email' => $data['email'],
+                            'password' => Hash::make($defaultPassword),
+                            'account_type' => 'student',
+                            'is_active' => true
+                        ];
+
+                        Log::info('StudentImportController@import - Création du User', [
+                            'email' => $data['email'],
+                            'name' => $userData['name']
                         ]);
-                    } catch (\Exception $e) {
-                        Log::error('StudentImportController@import - Erreur envoi email', [
-                            'student_id' => $student->id,
-                            'email' => $student->email,
-                            'error' => $e->getMessage()
+                        
+                        $user = User::create($userData);
+                        
+                        if (!$user) {
+                            throw new Exception('Échec de la création du User');
+                        }
+
+                        Log::info('StudentImportController@import - User créé', [
+                            'user_id' => $user->id,
+                            'user_email' => $user->email
                         ]);
-                        // Ne pas échouer l'import pour autant
+
+                        // Création de l'étudiant et liaison au User
+                        $studentData = [
+                            'student_number' => $data['student_number'],
+                            'first_name' => $data['first_name'],
+                            'last_name' => $data['last_name'],
+                            'birth_date' => $data['birth_date'],
+                            'email' => $data['email'],
+                            'phone' => $data['phone'],
+                            'class_id' => $data['class_id'],
+                            'institution_id' => $admin->institution_id,
+                            'user_id' => $user->id,
+                        ];
+                        
+                        Log::info('StudentImportController@import - Création du Student', $studentData);
+                        
+                        $student = Student::create($studentData);
+                        
+                        if (!$student) {
+                            throw new Exception('Échec de la création du Student');
+                        }
+
+                        Log::info('StudentImportController@import - Student créé', [
+                            'student_id' => $student->id,
+                            'student_number' => $student->student_number
+                        ]);
+
+                        // Commit de la transaction
+                        DB::commit();
+
+                        $imported++;
+
+                        // Envoi de l'email de bienvenue
+                        try {
+                            // $student->notify(new StudentWelcomeNotification($student, $defaultPassword));
+                            Log::info('StudentImportController@import - Email désactivé temporairement', [
+                                'student_id' => $student->id,
+                                'email' => $student->email
+                            ]);
+                        } catch (\Exception $e) {
+                            Log::error('StudentImportController@import - Erreur envoi email', [
+                                'student_id' => $student->id,
+                                'email' => $student->email,
+                                'error' => $e->getMessage()
+                            ]);
+                            // Ne pas échouer l'import pour autant
+                        }
+                        
+                    } catch (Exception $e) {
+                        // Rollback de la transaction
+                        DB::rollBack();
+                        throw $e;
                     }
                     
                 } catch (\Exception $e) {

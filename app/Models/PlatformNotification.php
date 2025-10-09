@@ -73,6 +73,7 @@ class PlatformNotification extends Model
     // Types de notifications
     const TYPE_REPORT_AVAILABLE = 'report_available';
     const TYPE_SESSION_COMPLETED = 'session_completed';
+    const TYPE_QUIZ_SESSION_CREATED = 'quiz_session_created';
     const TYPE_SYSTEM_ALERT = 'system_alert';
 
     public static function getTypeLabel($type)
@@ -80,6 +81,7 @@ class PlatformNotification extends Model
         return match($type) {
             self::TYPE_REPORT_AVAILABLE => 'Rapport disponible',
             self::TYPE_SESSION_COMPLETED => 'Session terminée',
+            self::TYPE_QUIZ_SESSION_CREATED => 'Session d\'examen créée',
             self::TYPE_SYSTEM_ALERT => 'Alerte système',
             default => ucfirst(str_replace('_', ' ', $type))
         };

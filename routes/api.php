@@ -264,9 +264,7 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 
-use App\Http\Controllers\Student\StudentProfileController;
-use App\Http\Controllers\Student\StudentResponseController;
-use App\Http\Controllers\Student\StudentDashboardController;
+use App\Http\Controllers\Student\StudentNotificationController;
 
 // Groupe de routes pour étudiants avec middleware auth
 Route::middleware(['auth:sanctum', 'student'])->prefix('student')->group(function () {
@@ -282,6 +280,16 @@ Route::middleware(['auth:sanctum', 'student'])->prefix('student')->group(functio
 
     // ===== TABLEAU DE BORD ÉTUDIANT =====
     Route::get('/dashboard', [StudentDashboardController::class, 'index'])->name('student.dashboard');
+
+    // ===== NOTIFICATIONS ÉTUDIANT =====
+    Route::prefix('notifications')->name('student.notifications.')->group(function () {
+        Route::get('/', [StudentNotificationController::class, 'index'])->name('index');
+        Route::get('/unread-count', [StudentNotificationController::class, 'getUnreadCount'])->name('unread_count');
+        Route::patch('/{id}/read', [StudentNotificationController::class, 'markAsRead'])->name('mark_read');
+        Route::patch('/bulk-read', [StudentNotificationController::class, 'markBulkAsRead'])->name('bulk_read');
+        Route::patch('/all-read', [StudentNotificationController::class, 'markAllAsRead'])->name('all_read');
+        Route::delete('/{id}', [StudentNotificationController::class, 'destroy'])->name('destroy');
+    });
 
     // Soumettre les réponses d'une session (Result)
     Route::post('/results/{resultId}/responses', [StudentResponseController::class, 'submitResponses'])

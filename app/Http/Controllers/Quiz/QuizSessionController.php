@@ -8,6 +8,8 @@ use App\Http\Requests\StoreQuizSessionRequest;
 use App\Http\Requests\UpdateQuizSessionRequest;
 use App\Models\QuizSession;
 use App\Models\Student;
+use App\Services\PlatformNotificationService;
+use App\Models\PlatformNotification;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Log;
@@ -77,6 +79,33 @@ class QuizSessionController extends Controller
         $session->status = 'scheduled';
         $session->generateSessionCode();
         $session->save();
+
+        // Notifier les étudiants
+        $notificationService = app(PlatformNotificationService::class);
+        $studentsQuery = Student::active()->where('institution_id', $teacher->institution_id);
+
+        if (!empty($session->allowed_students)) {
+            $studentsQuery->whereIn('id', $session->allowed_students);
+        }
+
+        $students = $studentsQuery->with('user')->get();
+        $users = $students->pluck('user')->filter();
+
+        if ($users->isNotEmpty()) {
+            $notificationService->createBulkNotifications(
+                $users,
+                PlatformNotification::TYPE_QUIZ_SESSION_CREATED,
+                'Nouvelle session d\'examen',
+                "Une nouvelle session d'examen '{$session->title}' a été créée pour le {$session->starts_at->format('d/m/Y à H:i')}.",
+                [
+                    'session_id' => $session->id,
+                    'quiz_id' => $session->quiz_id,
+                    'starts_at' => $session->starts_at->toISOString(),
+                    'ends_at' => $session->ends_at->toISOString(),
+                ],
+                $session->starts_at->addDays(1) // Expire le jour de la session
+            );
+        }
 
         return response()->json([
             'message' => 'Session créée avec succès',

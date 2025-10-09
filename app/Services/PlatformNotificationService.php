@@ -47,7 +47,7 @@ class PlatformNotificationService
                 'type' => $type,
                 'title' => $title,
                 'message' => $message,
-                'data' => $data,
+                'data' => json_encode($data),
                 'expires_at' => $expiresAt,
                 'created_at' => now(),
                 'updated_at' => now(),
