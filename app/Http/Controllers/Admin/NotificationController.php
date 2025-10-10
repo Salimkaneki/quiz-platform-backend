@@ -44,7 +44,20 @@ class NotificationController extends Controller
             ->paginate($request->get('per_page', 20));
 
         return response()->json([
-            'notifications' => $notifications->items(),
+            'notifications' => $notifications->map(function($notification) {
+                return [
+                    'id' => $notification->id,
+                    'type' => $notification->type,
+                    'type_label' => $notification->getTypeLabel(),
+                    'title' => $notification->title,
+                    'message' => $notification->message,
+                    'data' => $notification->data,
+                    'is_read' => $notification->isRead(),
+                    'created_at' => $notification->created_at,
+                    'updated_at' => $notification->updated_at,
+                    'expires_at' => $notification->expires_at,
+                ];
+            }),
             'pagination' => [
                 'current_page' => $notifications->currentPage(),
                 'last_page' => $notifications->lastPage(),
@@ -79,11 +92,22 @@ class NotificationController extends Controller
     public function markBulkAsRead(Request $request)
     {
         $request->validate([
-            'notification_ids' => 'required|array',
-            'notification_ids.*' => 'required|integer|exists:platform_notifications,id'
+            'notification_ids' => 'required|array|min:1',
+            'notification_ids.*' => 'required|integer'
         ]);
 
         $user = auth()->user();
+
+        // Vérifier que toutes les notifications appartiennent à l'utilisateur
+        $notificationCount = PlatformNotification::whereIn('id', $request->notification_ids)
+            ->where('user_id', $user->id)
+            ->count();
+
+        if ($notificationCount !== count($request->notification_ids)) {
+            return response()->json([
+                'message' => 'Une ou plusieurs notifications n\'existent pas ou ne vous appartiennent pas'
+            ], 404);
+        }
 
         $notifications = PlatformNotification::where('user_id', $user->id)
             ->whereIn('id', $request->notification_ids)
@@ -105,7 +129,7 @@ class NotificationController extends Controller
         $user = auth()->user();
 
         $count = PlatformNotification::where('user_id', $user->id)
-            ->unread()
+            ->whereNull('read_at')
             ->update(['read_at' => now()]);
 
         return response()->json([

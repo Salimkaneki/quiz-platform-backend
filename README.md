@@ -282,6 +282,21 @@ GET    /api/admin/quizzes/by-subject/{subjectId}    # Quiz par matière
 GET    /api/admin/quizzes/statistics         # Statistiques
 ```
 
+#### Sessions de Quiz (Admin)
+```
+GET    /api/admin/quiz-sessions              # Liste des sessions de l'institution
+POST   /api/admin/quiz-sessions              # Créer une session d'examen
+GET    /api/admin/quiz-sessions/{id}         # Détails d'une session
+PUT    /api/admin/quiz-sessions/{id}         # Modifier une session
+DELETE /api/admin/quiz-sessions/{id}         # Supprimer une session
+PATCH  /api/admin/quiz-sessions/{id}/activate # Activer une session
+PATCH  /api/admin/quiz-sessions/{id}/complete # Terminer une session
+PATCH  /api/admin/quiz-sessions/{id}/cancel  # Annuler une session
+GET    /api/admin/quiz-sessions/available-quizzes   # Quiz disponibles
+GET    /api/admin/quiz-sessions/available-teachers  # Enseignants disponibles
+GET    /api/admin/quiz-sessions/statistics          # Statistiques des sessions
+```
+
 #### Tableaux de bord
 ```
 GET    /api/admin/dashboard                  # Dashboard principal
@@ -698,6 +713,43 @@ curl -X GET http://localhost:8000/api/admin/quizzes \
 
 # 4. Voir les statistiques
 curl -X GET http://localhost:8000/api/admin/quizzes/statistics \
+  -H "Authorization: Bearer {TOKEN}"
+
+# 5. Créer une session d'examen (NOUVEAU)
+curl -X POST http://localhost:8000/api/admin/quiz-sessions \
+  -H "Authorization: Bearer {TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "quiz_id": 1,
+    "teacher_id": 2,
+    "title": "Examen de Mathématiques - Classe A",
+    "description": "Session d'examen organisée par l'administration",
+    "starts_at": "2025-10-15 09:00:00",
+    "ends_at": "2025-10-15 11:00:00",
+    "max_participants": 30,
+    "require_student_list": false,
+    "allowed_students": null,
+    "settings": {
+      "allow_late_join": false,
+      "show_progress": true,
+      "shuffle_questions": true
+    }
+  }'
+
+# 6. Lister les sessions de l'institution
+curl -X GET http://localhost:8000/api/admin/quiz-sessions \
+  -H "Authorization: Bearer {TOKEN}"
+
+# 7. Voir les quiz disponibles pour créer des sessions
+curl -X GET http://localhost:8000/api/admin/quiz-sessions/available-quizzes \
+  -H "Authorization: Bearer {TOKEN}"
+
+# 8. Voir les enseignants disponibles
+curl -X GET http://localhost:8000/api/admin/quiz-sessions/available-teachers \
+  -H "Authorization: Bearer {TOKEN}"
+
+# 9. Voir les statistiques des sessions
+curl -X GET http://localhost:8000/api/admin/quiz-sessions/statistics \
   -H "Authorization: Bearer {TOKEN}"
 ```
 

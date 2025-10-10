@@ -9,10 +9,10 @@ use Illuminate\Support\Collection;
 class PlatformNotificationService
 {
     /**
-     * Créer une notification pour un utilisateur
+     * Créer une notification pour un utilisateur (par ID)
      */
     public function createNotification(
-        User $user,
+        int $userId,
         string $type,
         string $title,
         string $message,
@@ -20,7 +20,7 @@ class PlatformNotificationService
         $expiresAt = null
     ): PlatformNotification {
         return PlatformNotification::create([
-            'user_id' => $user->id,
+            'user_id' => $userId,
             'type' => $type,
             'title' => $title,
             'message' => $message,
@@ -30,10 +30,10 @@ class PlatformNotificationService
     }
 
     /**
-     * Créer une notification pour plusieurs utilisateurs
+     * Créer une notification pour plusieurs utilisateurs (par IDs)
      */
     public function createBulkNotifications(
-        Collection $users,
+        array $userIds,
         string $type,
         string $title,
         string $message,
@@ -41,9 +41,9 @@ class PlatformNotificationService
         $expiresAt = null
     ): int {
         $notifications = [];
-        foreach ($users as $user) {
+        foreach ($userIds as $userId) {
             $notifications[] = [
-                'user_id' => $user->id,
+                'user_id' => $userId,
                 'type' => $type,
                 'title' => $title,
                 'message' => $message,

@@ -1,0 +1,1022 @@
+{
+  "info": {
+    "name": "Quiz Platform API Collection - v2.0",
+    "description": "Collection complète pour tester l'API de la plateforme de quiz avec les nouvelles fonctionnalités admin pour les sessions d'examen et le système de notifications",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "2.0"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{auth_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000/api",
+      "type": "string"
+    },
+    {
+      "key": "auth_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "admin_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "teacher_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "student_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "quiz_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "session_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "result_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "notification_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "🔐 AUTHENTIFICATION",
+      "item": [
+        {
+          "name": "Connexion Administrateur",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"password\",\n  \"institution_id\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/login",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "login"]
+            },
+            "description": "Connexion d'un administrateur pour obtenir un token d'authentification"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('admin_token', response.token);",
+                  "    pm.collectionVariables.set('auth_token', response.token);",
+                  "    console.log('Admin token saved:', response.token);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Connexion Enseignant",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"teacher@example.com\",\n  \"password\": \"password\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/teacher/login",
+              "host": ["{{base_url}}"],
+              "path": ["teacher", "login"]
+            },
+            "description": "Connexion d'un enseignant pour obtenir un token d'authentification"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('teacher_token', response.token);",
+                  "    pm.collectionVariables.set('auth_token', response.token);",
+                  "    console.log('Teacher token saved:', response.token);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Connexion Étudiant",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"student@example.com\",\n  \"password\": \"password\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/student/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["student", "auth", "login"]
+            },
+            "description": "Connexion d'un étudiant pour obtenir un token d'authentification"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('student_token', response.token);",
+                  "    pm.collectionVariables.set('auth_token', response.token);",
+                  "    console.log('Student token saved:', response.token);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "🏢 ADMIN - GESTION DES SESSIONS D'EXAMEN",
+      "item": [
+        {
+          "name": "Lister les sessions de l'institution",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/quiz-sessions?per_page=10",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "quiz-sessions"],
+              "query": [
+                {
+                  "key": "per_page",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Liste paginée de toutes les sessions de quiz de l'institution de l'admin"
+          }
+        },
+        {
+          "name": "Voir les quiz disponibles pour créer des sessions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/quiz-sessions/available-quizzes",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "quiz-sessions", "available-quizzes"]
+            },
+            "description": "Liste des quiz publiés disponibles pour créer des sessions d'examen"
+          }
+        },
+        {
+          "name": "Voir les enseignants disponibles",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/quiz-sessions/available-teachers",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "quiz-sessions", "available-teachers"]
+            },
+            "description": "Liste des enseignants disponibles pour assigner aux sessions"
+          }
+        },
+        {
+          "name": "Créer une session d'examen (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quiz_id\": 1,\n  \"teacher_id\": 2,\n  \"title\": \"Examen Institutionnel - Mathématiques\",\n  \"description\": \"Session d'examen organisée par l'administration\",\n  \"starts_at\": \"2025-10-15 09:00:00\",\n  \"ends_at\": \"2025-10-15 11:00:00\",\n  \"max_participants\": 30,\n  \"require_student_list\": false,\n  \"allowed_students\": null,\n  \"settings\": {\n    \"allow_late_join\": false,\n    \"show_progress\": true,\n    \"shuffle_questions\": true\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/quiz-sessions",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "quiz-sessions"]
+            },
+            "description": "Créer une nouvelle session d'examen en tant qu'administrateur"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('session_id', response.data.id);",
+                  "    console.log('Session created with ID:', response.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Voir les détails d'une session",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/quiz-sessions/{{session_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "quiz-sessions", "{{session_id}}"]
+            },
+            "description": "Voir les détails complets d'une session spécifique"
+          }
+        },
+        {
+          "name": "Modifier une session",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Examen Modifié - Mathématiques Avancées\",\n  \"max_participants\": 25,\n  \"description\": \"Session modifiée par l'administration\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/quiz-sessions/{{session_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "quiz-sessions", "{{session_id}}"]
+            },
+            "description": "Modifier les détails d'une session existante"
+          }
+        },
+        {
+          "name": "Activer une session",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/quiz-sessions/{{session_id}}/activate",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "quiz-sessions", "{{session_id}}", "activate"]
+            },
+            "description": "Activer une session programmée pour qu'elle devienne accessible aux étudiants"
+          }
+        },
+        {
+          "name": "Terminer une session",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/quiz-sessions/{{session_id}}/complete",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "quiz-sessions", "{{session_id}}", "complete"]
+            },
+            "description": "Terminer une session active"
+          }
+        },
+        {
+          "name": "Annuler une session",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/quiz-sessions/{{session_id}}/cancel",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "quiz-sessions", "{{session_id}}", "cancel"]
+            },
+            "description": "Annuler une session programmée ou active"
+          }
+        },
+        {
+          "name": "Supprimer une session",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/quiz-sessions/{{session_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "quiz-sessions", "{{session_id}}"]
+            },
+            "description": "Supprimer une session (uniquement si elle n'est pas active)"
+          }
+        },
+        {
+          "name": "Voir les statistiques des sessions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/quiz-sessions/statistics",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "quiz-sessions", "statistics"]
+            },
+            "description": "Voir les statistiques globales des sessions de l'institution"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔔 ADMIN - NOTIFICATIONS ENSEIGNANTS",
+      "item": [
+        {
+          "name": "Lister les enseignants disponibles",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/teacher-notifications/teachers",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "teacher-notifications", "teachers"]
+            },
+            "description": "Liste des enseignants disponibles pour recevoir des notifications"
+          }
+        },
+        {
+          "name": "Envoyer à tous les enseignants",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"admin_announcement\",\n  \"title\": \"Annonce Importante\",\n  \"message\": \"L'établissement sera fermé demain pour raisons techniques.\",\n  \"data\": {\n    \"priority\": \"high\",\n    \"category\": \"maintenance\"\n  },\n  \"expires_at\": \"2025-10-11 23:59:59\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/teacher-notifications/send-to-all",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "teacher-notifications", "send-to-all"]
+            },
+            "description": "Envoyer une notification à tous les enseignants de l'institution"
+          }
+        },
+        {
+          "name": "Envoyer à un enseignant spécifique",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"teacher_id\": 2,\n  \"type\": \"teacher_assignment\",\n  \"title\": \"Nouvelle Attribution\",\n  \"message\": \"Vous êtes désormais responsable du cours de Mathématiques appliquées.\",\n  \"data\": {\n    \"subject_id\": 3,\n    \"start_date\": \"2025-10-15\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/teacher-notifications/send-to-teacher/2",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "teacher-notifications", "send-to-teacher", "2"]
+            },
+            "description": "Envoyer une notification à un enseignant spécifique"
+          }
+        },
+        {
+          "name": "Envoyer à plusieurs enseignants",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"teacher_ids\": [2, 3, 4],\n  \"type\": \"training_required\",\n  \"title\": \"Formation Obligatoire\",\n  \"message\": \"Formation sur les nouvelles méthodes pédagogiques - Date: 20 octobre 2025\",\n  \"data\": {\n    \"training_date\": \"2025-10-20\",\n    \"duration_hours\": 4,\n    \"location\": \"Salle de formation A\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/teacher-notifications/send-to-multiple",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "teacher-notifications", "send-to-multiple"]
+            },
+            "description": "Envoyer une notification à plusieurs enseignants sélectionnés"
+          }
+        }
+      ]
+    },
+    {
+      "name": "👨‍🏫 ENSEIGNANT - NOTIFICATIONS",
+      "item": [
+        {
+          "name": "Lister mes notifications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{teacher_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/teacher/notifications?per_page=10",
+              "host": ["{{base_url}}"],
+              "path": ["teacher", "notifications"],
+              "query": [
+                {
+                  "key": "per_page",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Liste paginée des notifications de l'enseignant connecté"
+          }
+        },
+        {
+          "name": "Compteur de notifications non lues",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{teacher_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/teacher/notifications/unread-count",
+              "host": ["{{base_url}}"],
+              "path": ["teacher", "notifications", "unread-count"]
+            },
+            "description": "Nombre de notifications non lues"
+          }
+        },
+        {
+          "name": "Marquer une notification comme lue",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{teacher_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/teacher/notifications/1/read",
+              "host": ["{{base_url}}"],
+              "path": ["teacher", "notifications", "1", "read"]
+            },
+            "description": "Marquer une notification spécifique comme lue"
+          }
+        },
+        {
+          "name": "Marquer plusieurs notifications comme lues",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{teacher_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"notification_ids\": [1, 2, 3]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/teacher/notifications/bulk-read",
+              "host": ["{{base_url}}"],
+              "path": ["teacher", "notifications", "bulk-read"]
+            },
+            "description": "Marquer plusieurs notifications comme lues en une fois"
+          }
+        },
+        {
+          "name": "Marquer toutes les notifications comme lues",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{teacher_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/teacher/notifications/all-read",
+              "host": ["{{base_url}}"],
+              "path": ["teacher", "notifications", "all-read"]
+            },
+            "description": "Marquer toutes les notifications comme lues"
+          }
+        },
+        {
+          "name": "Supprimer une notification",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{teacher_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/teacher/notifications/1",
+              "host": ["{{base_url}}"],
+              "path": ["teacher", "notifications", "1"]
+            },
+            "description": "Supprimer une notification spécifique"
+          }
+        }
+      ]
+    },
+    {
+      "name": "👨‍🎓 ÉTUDIANT - NOTIFICATIONS",
+      "item": [
+        {
+          "name": "Lister mes notifications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{student_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/student/notifications?per_page=10",
+              "host": ["{{base_url}}"],
+              "path": ["student", "notifications"],
+              "query": [
+                {
+                  "key": "per_page",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Liste paginée des notifications de l'étudiant connecté"
+          }
+        },
+        {
+          "name": "Compteur de notifications non lues",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{student_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/student/notifications/unread-count",
+              "host": ["{{base_url}}"],
+              "path": ["student", "notifications", "unread-count"]
+            },
+            "description": "Nombre de notifications non lues"
+          }
+        },
+        {
+          "name": "Marquer une notification comme lue",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{student_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/student/notifications/1/read",
+              "host": ["{{base_url}}"],
+              "path": ["student", "notifications", "1", "read"]
+            },
+            "description": "Marquer une notification spécifique comme lue"
+          }
+        },
+        {
+          "name": "Marquer plusieurs notifications comme lues",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{student_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"notification_ids\": [1, 2, 3]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/student/notifications/bulk-read",
+              "host": ["{{base_url}}"],
+              "path": ["student", "notifications", "bulk-read"]
+            },
+            "description": "Marquer plusieurs notifications comme lues en une fois"
+          }
+        },
+        {
+          "name": "Marquer toutes les notifications comme lues",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{student_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/student/notifications/all-read",
+              "host": ["{{base_url}}"],
+              "path": ["student", "notifications", "all-read"]
+            },
+            "description": "Marquer toutes les notifications comme lues"
+          }
+        },
+        {
+          "name": "Supprimer une notification",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{student_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/student/notifications/1",
+              "host": ["{{base_url}}"],
+              "path": ["student", "notifications", "1"]
+            },
+            "description": "Supprimer une notification spécifique"
+          }
+        }
+      ]
+    },
+    {
+      "name": "📊 DASHBOARD ADMIN",
+      "item": [
+        {
+          "name": "Voir le tableau de bord principal",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/dashboard",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "dashboard"]
+            },
+            "description": "Données complètes du tableau de bord administrateur"
+          }
+        },
+        {
+          "name": "Voir les données des graphiques",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/dashboard/charts/students_by_class",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "dashboard", "charts", "students_by_class"]
+            },
+            "description": "Données pour les graphiques du dashboard (exemple: étudiants par classe)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "📝 EXEMPLES COMPLETS - WORKFLOWS",
+      "item": [
+        {
+          "name": "🏫 WORKFLOW COMPLET: Création d'examen institutionnel",
+          "item": [
+            {
+              "name": "1. Lister les quiz disponibles",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{admin_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/admin/quiz-sessions/available-quizzes",
+                  "host": ["{{base_url}}"],
+                  "path": ["admin", "quiz-sessions", "available-quizzes"]
+                }
+              }
+            },
+            {
+              "name": "2. Lister les enseignants disponibles",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{admin_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/admin/quiz-sessions/available-teachers",
+                  "host": ["{{base_url}}"],
+                  "path": ["admin", "quiz-sessions", "available-teachers"]
+                }
+              }
+            },
+            {
+              "name": "3. Créer la session d'examen",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{admin_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"quiz_id\": 1,\n  \"teacher_id\": 2,\n  \"title\": \"Examen Final - Mathématiques\",\n  \"description\": \"Examen de fin de semestre organisé par l'administration\",\n  \"starts_at\": \"2025-10-20 08:00:00\",\n  \"ends_at\": \"2025-10-20 10:00:00\",\n  \"max_participants\": 50,\n  \"require_student_list\": false,\n  \"settings\": {\n    \"allow_late_join\": false,\n    \"show_progress\": true,\n    \"shuffle_questions\": true\n  }\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/admin/quiz-sessions",
+                  "host": ["{{base_url}}"],
+                  "path": ["admin", "quiz-sessions"]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 201) {",
+                      "    const response = pm.response.json();",
+                      "    pm.collectionVariables.set('session_id', response.data.id);",
+                      "    console.log('Institutional exam session created with ID:', response.data.id);",
+                      "}"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "4. Activer la session",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{admin_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/admin/quiz-sessions/{{session_id}}/activate",
+                  "host": ["{{base_url}}"],
+                  "path": ["admin", "quiz-sessions", "{{session_id}}", "activate"]
+                }
+              }
+            },
+            {
+              "name": "5. Vérifier que les étudiants ont reçu la notification",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{student_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/student/notifications/unread-count",
+                  "host": ["{{base_url}}"],
+                  "path": ["student", "notifications", "unread-count"]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "📢 WORKFLOW COMPLET: Campagne de notifications enseignants",
+          "item": [
+            {
+              "name": "1. Lister les enseignants",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{admin_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/admin/teacher-notifications/teachers",
+                  "host": ["{{base_url}}"],
+                  "path": ["admin", "teacher-notifications", "teachers"]
+                }
+              }
+            },
+            {
+              "name": "2. Envoyer annonce à tous",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{admin_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"type\": \"admin_announcement\",\n  \"title\": \"Réunion Pédagogique Importante\",\n  \"message\": \"Réunion obligatoire de tous les enseignants demain à 14h en salle de conférence.\",\n  \"data\": {\n    \"priority\": \"high\",\n    \"meeting_date\": \"2025-10-11\",\n    \"meeting_time\": \"14:00\",\n    \"location\": \"Salle de conférence A\"\n  },\n  \"expires_at\": \"2025-10-11 23:59:59\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/admin/teacher-notifications/send-to-all",
+                  "host": ["{{base_url}}"],
+                  "path": ["admin", "teacher-notifications", "send-to-all"]
+                }
+              }
+            },
+            {
+              "name": "3. Vérifier que l'enseignant a reçu la notification",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{teacher_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/teacher/notifications/unread-count",
+                  "host": ["{{base_url}}"],
+                  "path": ["teacher", "notifications", "unread-count"]
+                }
+              }
+            },
+            {
+              "name": "4. Voir le détail de la notification",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{teacher_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/teacher/notifications?type=admin_announcement",
+                  "host": ["{{base_url}}"],
+                  "path": ["teacher", "notifications"],
+                  "query": [
+                    {
+                      "key": "type",
+                      "value": "admin_announcement"
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

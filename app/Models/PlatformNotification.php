@@ -76,14 +76,33 @@ class PlatformNotification extends Model
     const TYPE_QUIZ_SESSION_CREATED = 'quiz_session_created';
     const TYPE_SYSTEM_ALERT = 'system_alert';
 
-    public static function getTypeLabel($type)
+    // Nouveaux types pour admin -> enseignants
+    const TYPE_ADMIN_ANNOUNCEMENT = 'admin_announcement';
+    const TYPE_TEACHER_ASSIGNMENT = 'teacher_assignment';
+    const TYPE_SCHEDULE_CHANGE = 'schedule_change';
+    const TYPE_MAINTENANCE_WARNING = 'maintenance_warning';
+    const TYPE_POLICY_UPDATE = 'policy_update';
+    const TYPE_TRAINING_REQUIRED = 'training_required';
+    const TYPE_PERFORMANCE_FEEDBACK = 'performance_feedback';
+    const TYPE_SYSTEM_UPDATE = 'system_update';
+
+    public function getTypeLabel()
     {
-        return match($type) {
+        return match($this->type) {
             self::TYPE_REPORT_AVAILABLE => 'Rapport disponible',
             self::TYPE_SESSION_COMPLETED => 'Session terminée',
             self::TYPE_QUIZ_SESSION_CREATED => 'Session d\'examen créée',
             self::TYPE_SYSTEM_ALERT => 'Alerte système',
-            default => ucfirst(str_replace('_', ' ', $type))
+            // Nouveaux types admin -> enseignants
+            self::TYPE_ADMIN_ANNOUNCEMENT => 'Annonce administrative',
+            self::TYPE_TEACHER_ASSIGNMENT => 'Nouvelle affectation',
+            self::TYPE_SCHEDULE_CHANGE => 'Changement d\'horaire',
+            self::TYPE_MAINTENANCE_WARNING => 'Maintenance programmée',
+            self::TYPE_POLICY_UPDATE => 'Mise à jour des politiques',
+            self::TYPE_TRAINING_REQUIRED => 'Formation requise',
+            self::TYPE_PERFORMANCE_FEEDBACK => 'Retour sur performance',
+            self::TYPE_SYSTEM_UPDATE => 'Mise à jour système',
+            default => ucfirst(str_replace('_', ' ', $this->type))
         };
     }
 }

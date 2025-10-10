@@ -47,12 +47,12 @@ class Teacher extends Model
         return $this->hasMany(TeacherSubject::class);
     }
 
-    public function subjects(): BelongsToMany
-    {
-        return $this->belongsToMany(Subject::class, 'teacher_subjects')
-            ->withPivot('classe_id', 'academic_year', 'is_active')
-            ->withTimestamps();
-    }
+    // public function subjects(): BelongsToMany
+    // {
+    //     return $this->belongsToMany(Subject::class, 'teacher_subjects')
+    //         ->withPivot('classe_id', 'academic_year', 'is_active')
+    //         ->withTimestamps();
+    // }
 
     // Scopes
     public function scopePermanent($query)

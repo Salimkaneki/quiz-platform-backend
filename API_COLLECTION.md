@@ -194,6 +194,23 @@
 | `GET` | `/by-subject/{subjectId}` | Quiz par matière | ✅ Admin |
 | `GET` | `/statistics` | Statistiques des quiz | ✅ Admin |
 
+### 🎯 **ADMIN QUIZ SESSIONS**
+**Base URL:** `/api/admin/quiz-sessions`
+
+| Méthode | Endpoint | Description | Authentification |
+|---------|----------|-------------|------------------|
+| `GET` | `/` | Liste des sessions de l'institution | ✅ Admin |
+| `POST` | `/` | Créer une session d'examen | ✅ Admin |
+| `GET` | `/available-quizzes` | Quiz disponibles pour sessions | ✅ Admin |
+| `GET` | `/available-teachers` | Enseignants disponibles | ✅ Admin |
+| `GET` | `/statistics` | Statistiques des sessions | ✅ Admin |
+| `GET` | `/{id}` | Détails d'une session | ✅ Admin |
+| `PUT` | `/{id}` | Modifier une session | ✅ Admin |
+| `DELETE` | `/{id}` | Supprimer une session | ✅ Admin |
+| `PATCH` | `/{id}/activate` | Activer une session | ✅ Admin |
+| `PATCH` | `/{id}/complete` | Terminer une session | ✅ Admin |
+| `PATCH` | `/{id}/cancel` | Annuler une session | ✅ Admin |
+
 ### 📊 **ADMIN DASHBOARD**
 **Base URL:** `/api/admin/dashboard`
 
@@ -201,6 +218,38 @@
 |---------|----------|-------------|------------------|
 | `GET` | `/` | Données du tableau de bord | ✅ Admin |
 | `GET` | `/charts/{chartType}` | Données des graphiques | ✅ Admin |
+
+### 🔔 **ADMIN TEACHER NOTIFICATIONS**
+**Base URL:** `/api/admin/teacher-notifications`
+
+| Méthode | Endpoint | Description | Authentification |
+|---------|----------|-------------|------------------|
+| `GET` | `/teachers` | Liste des enseignants disponibles | ✅ Admin |
+| `POST` | `/send-to-all` | Envoyer à tous les enseignants | ✅ Admin |
+| `POST` | `/send-to-teacher/{teacherId}` | Envoyer à un enseignant spécifique | ✅ Admin |
+| `POST` | `/send-to-multiple` | Envoyer à plusieurs enseignants | ✅ Admin |
+
+### 📬 **ADMIN NOTIFICATIONS**
+**Base URL:** `/api/admin/notifications`
+
+| Méthode | Endpoint | Description | Authentification |
+|---------|----------|-------------|------------------|
+| `GET` | `/` | Liste des notifications admin | ✅ Admin |
+| `GET` | `/unread-count` | Compteur non lues | ✅ Admin |
+| `PATCH` | `/{id}/read` | Marquer comme lue | ✅ Admin |
+| `PATCH` | `/bulk-read` | Marquer plusieurs comme lues | ✅ Admin |
+| `PATCH` | `/all-read` | Marquer toutes comme lues | ✅ Admin |
+| `DELETE` | `/{id}` | Supprimer une notification | ✅ Admin |
+| `POST` | `/cleanup` | Nettoyer les expirées | ✅ Admin |
+
+### 📧 **ADMIN REPORTS**
+**Base URL:** `/api/reports`
+
+| Méthode | Endpoint | Description | Authentification |
+|---------|----------|-------------|------------------|
+| `GET` | `/sessions` | Sessions disponibles pour rapports | ✅ Admin |
+| `POST` | `/sessions/{sessionId}/send` | Envoyer rapport de session | ✅ Admin |
+| `POST` | `/periodic` | Envoyer rapport périodique | ✅ Admin |
 
 ---
 
@@ -277,6 +326,18 @@
 | `GET` | `/sessions` | Historique des sessions | ✅ Teacher |
 | `GET` | `/results` | Historique des résultats | ✅ Teacher |
 
+### 🔔 **TEACHER NOTIFICATIONS**
+**Base URL:** `/api/teacher/notifications`
+
+| Méthode | Endpoint | Description | Authentification |
+|---------|----------|-------------|------------------|
+| `GET` | `/` | Liste des notifications | ✅ Teacher |
+| `GET` | `/unread-count` | Compteur non lues | ✅ Teacher |
+| `PATCH` | `/{id}/read` | Marquer comme lue | ✅ Teacher |
+| `PATCH` | `/bulk-read` | Marquer plusieurs comme lues | ✅ Teacher |
+| `PATCH` | `/all-read` | Marquer toutes comme lues | ✅ Teacher |
+| `DELETE` | `/{id}` | Supprimer une notification | ✅ Teacher |
+
 ---
 
 ## 👨‍🎓 **ÉTUDIANTS**
@@ -327,6 +388,18 @@
 | `POST` | `/{resultId}/responses` | Soumettre des réponses | ✅ Student |
 | `GET` | `/{resultId}/responses` | Voir ses réponses | ✅ Student |
 | `GET` | `/{resultId}/responses/{questionId}` | Voir une réponse spécifique | ✅ Student |
+
+### 🔔 **STUDENT NOTIFICATIONS**
+**Base URL:** `/api/student/notifications`
+
+| Méthode | Endpoint | Description | Authentification |
+|---------|----------|-------------|------------------|
+| `GET` | `/` | Liste des notifications | ✅ Student |
+| `GET` | `/unread-count` | Compteur non lues | ✅ Student |
+| `PATCH` | `/{id}/read` | Marquer comme lue | ✅ Student |
+| `PATCH` | `/bulk-read` | Marquer plusieurs comme lues | ✅ Student |
+| `PATCH` | `/all-read` | Marquer toutes comme lues | ✅ Student |
+| `DELETE` | `/{id}` | Supprimer une notification | ✅ Student |
 
 ---
 

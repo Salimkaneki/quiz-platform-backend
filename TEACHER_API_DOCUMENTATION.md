@@ -362,7 +362,126 @@ Authorization: Bearer {token}
 
 ---
 
-## 📝 NOTES IMPORTANTES
+## � 8. GESTION DES NOTIFICATIONS
+
+### 8.1 Lister les notifications
+**GET** `/api/teacher/notifications`
+
+**Query Parameters (optionnels) :**
+```json
+{
+  "type": "admin_announcement",
+  "read": false,
+  "per_page": 15
+}
+```
+
+**Réponse :**
+```json
+{
+  "success": true,
+  "data": {
+    "current_page": 1,
+    "data": [
+      {
+        "id": 1,
+        "type": "admin_announcement",
+        "type_label": "Annonce administrative",
+        "title": "Maintenance programmée",
+        "message": "Le système sera indisponible dimanche de 2h à 4h.",
+        "data": {"priority": "high"},
+        "is_read": false,
+        "created_at": "2025-09-30T08:00:00Z",
+        "expires_at": null
+      }
+    ],
+    "last_page": 1,
+    "per_page": 15,
+    "total": 1
+  }
+}
+```
+
+### 8.2 Compteur de notifications non lues
+**GET** `/api/teacher/notifications/unread-count`
+
+**Réponse :**
+```json
+{
+  "success": true,
+  "data": {
+    "unread_count": 3
+  }
+}
+```
+
+### 8.3 Marquer une notification comme lue
+**PATCH** `/api/teacher/notifications/{id}/read`
+
+**Réponse :**
+```json
+{
+  "success": true,
+  "message": "Notification marquée comme lue",
+  "data": {...}
+}
+```
+
+### 8.4 Marquer plusieurs notifications comme lues
+**PATCH** `/api/teacher/notifications/bulk-read`
+
+**Payload :**
+```json
+{
+  "notification_ids": [1, 2, 3]
+}
+```
+
+**Réponse :**
+```json
+{
+  "success": true,
+  "message": "3 notification(s) marquée(s) comme lue(s)"
+}
+```
+
+### 8.5 Marquer toutes les notifications comme lues
+**PATCH** `/api/teacher/notifications/all-read`
+
+**Réponse :**
+```json
+{
+  "success": true,
+  "message": "Toutes les notifications ont été marquées comme lues (5 notification(s))"
+}
+```
+
+### 8.6 Supprimer une notification
+**DELETE** `/api/teacher/notifications/{id}`
+
+**Réponse :**
+```json
+{
+  "success": true,
+  "message": "Notification supprimée avec succès"
+}
+```
+
+### 8.7 Types de notifications disponibles
+Les enseignants peuvent recevoir les types de notifications suivants :
+
+| Type | Label | Description |
+|------|-------|-------------|
+| `admin_announcement` | Annonce administrative | Annonces générales de l'administration |
+| `teacher_assignment` | Attribution de matière | Attribution de nouvelles matières |
+| `schedule_change` | Changement d'horaire | Modifications d'emploi du temps |
+| `system_maintenance` | Maintenance système | Alertes de maintenance |
+| `policy_update` | Mise à jour des politiques | Changements de politiques |
+| `training_required` | Formation requise | Formations obligatoires |
+| `performance_review` | Évaluation de performance | Évaluations périodiques |
+| `contract_update` | Mise à jour contractuelle | Changements contractuels |
+
+---
 
 - **Authentification** : Toutes les routes nécessitent un token Bearer
 - **Autorisation** : Un enseignant ne peut accéder qu'à ses propres ressources

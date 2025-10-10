@@ -19,13 +19,14 @@ use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\Management\TeacherSubjectController;
 use App\Http\Controllers\Admin\StudentImportController;
 use App\Http\Controllers\Admin\QuizController as AdminQuizController;
+use App\Http\Controllers\Admin\AdminQuizSessionController;
 
 // Teacher Controllers
 use App\Http\Controllers\Auth\TeacherAuthController;
 use App\Http\Controllers\Quiz\QuizSessionController;
 use App\Http\Controllers\Quiz\QuizController;
 use App\Http\Controllers\Quiz\QuestionController;
-use App\Http\Controllers\Quiz\TeacherHistoryController;
+use App\Http\Controllers\Teacher\TeacherNotificationController;
 
 // =================== ROUTES PUBLIQUES ===================
 
@@ -169,13 +170,22 @@ Route::prefix('admin')->name('admin.')->middleware(['auth:sanctum', 'admin'])->g
         Route::delete('/{teacherSubject}', [TeacherSubjectController::class, 'destroy'])->name('destroy');
     });
 
-    // ===== QUIZZES (Vue admin) =====
-    Route::prefix('quizzes')->name('quizzes.')->group(function () {
-        Route::get('/', [AdminQuizController::class, 'index'])->name('index');
-        Route::get('/{id}', [AdminQuizController::class, 'show'])->name('show');
-        Route::get('/by-teacher/{teacherId}', [AdminQuizController::class, 'getByTeacher'])->name('by_teacher');
-        Route::get('/by-subject/{subjectId}', [AdminQuizController::class, 'getBySubject'])->name('by_subject');
-        Route::get('/statistics', [AdminQuizController::class, 'getStatistics'])->name('statistics');
+    // ===== QUIZ SESSIONS (Gestion admin) =====
+    Route::prefix('quiz-sessions')->name('quiz_sessions.')->group(function () {
+        Route::get('/', [AdminQuizSessionController::class, 'index'])->name('index');
+        Route::post('/', [AdminQuizSessionController::class, 'store'])->name('store');
+        Route::get('/available-quizzes', [AdminQuizSessionController::class, 'getAvailableQuizzes'])->name('available_quizzes');
+        Route::get('/available-teachers', [AdminQuizSessionController::class, 'getAvailableTeachers'])->name('available_teachers');
+        Route::get('/statistics', [AdminQuizSessionController::class, 'getStatistics'])->name('statistics');
+        
+        Route::get('/{id}', [AdminQuizSessionController::class, 'show'])->name('show');
+        Route::put('/{id}', [AdminQuizSessionController::class, 'update'])->name('update');
+        Route::delete('/{id}', [AdminQuizSessionController::class, 'destroy'])->name('destroy');
+        
+        // Actions sur les sessions
+        Route::patch('/{id}/activate', [AdminQuizSessionController::class, 'activate'])->name('activate');
+        Route::patch('/{id}/complete', [AdminQuizSessionController::class, 'complete'])->name('complete');
+        Route::patch('/{id}/cancel', [AdminQuizSessionController::class, 'cancel'])->name('cancel');
     });
 });
 
@@ -224,16 +234,14 @@ Route::prefix('teacher')->name('teacher.')->middleware(['auth:sanctum', 'teacher
         Route::post('clean-duplicates', [QuizSessionController::class, 'cleanDuplicates'])->name('duplicates.clean');
     });
     
-    // ===== QUESTIONS (Dans le contexte d'un quiz) =====
-    Route::prefix('quizzes/{quizId}')->name('quizzes.')->group(function () {
-        Route::prefix('questions')->name('questions.')->group(function () {
-            Route::get('/', [QuestionController::class, 'index'])->name('index');
-            Route::get('/{questionId}', [QuestionController::class, 'show'])->name('show');
-            Route::post('/', [QuestionController::class, 'store'])->name('store');
-            Route::post('batch', [QuestionController::class, 'batchStore'])->name('batch_store');
-            Route::put('/{questionId}', [QuestionController::class, 'update'])->name('update');
-            Route::delete('/{questionId}', [QuestionController::class, 'destroy'])->name('destroy');
-        });
+    // ===== NOTIFICATIONS ENSEIGNANT =====
+    Route::prefix('notifications')->name('teacher.notifications.')->group(function () {
+        Route::get('/', [TeacherNotificationController::class, 'index'])->name('index');
+        Route::get('/unread-count', [TeacherNotificationController::class, 'getUnreadCount'])->name('unread_count');
+        Route::patch('/{id}/read', [TeacherNotificationController::class, 'markAsRead'])->name('mark_read');
+        Route::patch('/bulk-read', [TeacherNotificationController::class, 'markBulkAsRead'])->name('bulk_read');
+        Route::patch('/all-read', [TeacherNotificationController::class, 'markAllAsRead'])->name('all_read');
+        Route::delete('/{id}', [TeacherNotificationController::class, 'destroy'])->name('destroy');
     });
 });
 
@@ -271,15 +279,15 @@ Route::middleware(['auth:sanctum', 'student'])->prefix('student')->group(functio
 
     // ===== PROFIL ÉTUDIANT =====
     Route::prefix('profile')->group(function () {
-        Route::get('/', [StudentProfileController::class, 'show'])->name('student.profile.show');
-        Route::put('/', [StudentProfileController::class, 'update'])->name('student.profile.update');
-        Route::post('/change-password', [StudentProfileController::class, 'changePassword'])->name('student.profile.change_password');
-        Route::post('/picture', [StudentProfileController::class, 'uploadProfilePicture'])->name('student.profile.upload_picture');
-        Route::delete('/picture', [StudentProfileController::class, 'deleteProfilePicture'])->name('student.profile.delete_picture');
+        Route::get('/', [\App\Http\Controllers\Student\StudentProfileController::class, 'show'])->name('student.profile.show');
+        Route::put('/', [\App\Http\Controllers\Student\StudentProfileController::class, 'update'])->name('student.profile.update');
+        Route::post('/change-password', [\App\Http\Controllers\Student\StudentProfileController::class, 'changePassword'])->name('student.profile.change_password');
+        Route::post('/picture', [\App\Http\Controllers\Student\StudentProfileController::class, 'uploadProfilePicture'])->name('student.profile.upload_picture');
+        Route::delete('/picture', [\App\Http\Controllers\Student\StudentProfileController::class, 'deleteProfilePicture'])->name('student.profile.delete_picture');
     });
 
     // ===== TABLEAU DE BORD ÉTUDIANT =====
-    Route::get('/dashboard', [StudentDashboardController::class, 'index'])->name('student.dashboard');
+    Route::get('/dashboard', [\App\Http\Controllers\Student\StudentDashboardController::class, 'index'])->name('student.dashboard');
 
     // ===== NOTIFICATIONS ÉTUDIANT =====
     Route::prefix('notifications')->name('student.notifications.')->group(function () {
@@ -292,15 +300,15 @@ Route::middleware(['auth:sanctum', 'student'])->prefix('student')->group(functio
     });
 
     // Soumettre les réponses d'une session (Result)
-    Route::post('/results/{resultId}/responses', [StudentResponseController::class, 'submitResponses'])
+    Route::post('/results/{resultId}/responses', [\App\Http\Controllers\Student\StudentResponseController::class, 'submitResponses'])
          ->name('student.responses.submit');
 
     // Optionnel : récupérer toutes les réponses d'un résultat (lecture)
-    Route::get('/results/{resultId}/responses', [StudentResponseController::class, 'index'])
+    Route::get('/results/{resultId}/responses', [\App\Http\Controllers\Student\StudentResponseController::class, 'index'])
          ->name('student.responses.index');
 
     // Optionnel : récupérer une réponse spécifique
-    Route::get('/results/{resultId}/responses/{questionId}', [StudentResponseController::class, 'show'])
+    Route::get('/results/{resultId}/responses/{questionId}', [\App\Http\Controllers\Student\StudentResponseController::class, 'show'])
          ->name('student.responses.show');
 });
 
@@ -340,7 +348,6 @@ Route::fallback(function(){
 });
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ReportController;
-use App\Http\Controllers\Admin\NotificationController;
 
 Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     // Dashboard
@@ -363,5 +370,13 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
         Route::patch('/all-read', [NotificationController::class, 'markAllAsRead'])->name('all_read');
         Route::delete('/{id}', [NotificationController::class, 'destroy'])->name('destroy');
         Route::post('/cleanup', [NotificationController::class, 'cleanupExpired'])->name('cleanup');
+    });
+
+    // Notifications vers les enseignants
+    Route::prefix('admin/teacher-notifications')->name('admin.teacher_notifications.')->group(function () {
+        Route::get('/teachers', [AdminTeacherNotificationController::class, 'getAvailableTeachers'])->name('teachers');
+        Route::post('/send-to-all', [AdminTeacherNotificationController::class, 'sendToAllTeachers'])->name('send_to_all');
+        Route::post('/send-to-teacher/{teacherId}', [AdminTeacherNotificationController::class, 'sendToSpecificTeacher'])->name('send_to_teacher');
+        Route::post('/send-to-multiple', [AdminTeacherNotificationController::class, 'sendToMultipleTeachers'])->name('send_to_multiple');
     });
 });
