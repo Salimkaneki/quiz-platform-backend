@@ -76,17 +76,43 @@ class AdminQuizSessionController extends Controller
         $institutionId = $this->getInstitutionId();
         $validated = $request->validated();
 
-        // Vérifier que le quiz appartient à l'institution
+        // Déterminer l'enseignant pour la session
+        $teacherId = $validated['teacher_id'] ?? null;
+
+        // Si pas d'enseignant spécifié, récupérer l'enseignant du quiz
+        if (!$teacherId) {
+            $quiz = \App\Models\Quiz::find($validated['quiz_id']);
+            if (!$quiz) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Quiz non trouvé'
+                ], 404);
+            }
+            $teacherId = $quiz->teacher_id;
+        }
+
+        // Vérifier que l'enseignant appartient à l'institution
+        $teacher = \App\Models\Teacher::where('id', $teacherId)
+            ->where('institution_id', $institutionId)
+            ->first();
+
+        if (!$teacher) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Enseignant non trouvé ou n\'appartenant pas à votre institution'
+            ], 404);
+        }
+
+        // Vérifier que le quiz appartient à l'enseignant spécifié
         $quiz = \App\Models\Quiz::where('id', $validated['quiz_id'])
-            ->whereHas('teacher', function($q) use ($institutionId) {
-                $q->where('institution_id', $institutionId);
-            })
+            ->where('teacher_id', $teacherId)
+            ->where('status', 'published')
             ->first();
 
         if (!$quiz) {
             return response()->json([
                 'success' => false,
-                'message' => 'Quiz non trouvé ou n\'appartenant pas à votre institution'
+                'message' => 'Quiz non trouvé, non publié, ou n\'appartenant pas à l\'enseignant spécifié'
             ], 404);
         }
 
@@ -96,7 +122,7 @@ class AdminQuizSessionController extends Controller
         }
 
         // Vérifier les doublons
-        $exists = QuizSession::where('teacher_id', $validated['teacher_id'] ?? $quiz->teacher_id)
+        $exists = QuizSession::where('teacher_id', $teacherId)
             ->where('title', $validated['title'])
             ->where('starts_at', $validated['starts_at'])
             ->where('ends_at', $validated['ends_at'])
@@ -110,7 +136,7 @@ class AdminQuizSessionController extends Controller
         }
 
         $session = new QuizSession($validated);
-        $session->teacher_id = $validated['teacher_id'] ?? $quiz->teacher_id; // Utiliser l'enseignant du quiz si non spécifié
+        $session->teacher_id = $teacherId; // Utiliser l'enseignant déterminé et validé
         $session->status = 'scheduled';
         $session->generateSessionCode();
         $session->save();
@@ -128,7 +154,7 @@ class AdminQuizSessionController extends Controller
 
         if ($users->isNotEmpty()) {
             $notificationService->createBulkNotifications(
-                $users,
+                $users->pluck('id')->toArray(),
                 PlatformNotification::TYPE_QUIZ_SESSION_CREATED,
                 'Nouvelle session d\'examen',
                 "Une nouvelle session d'examen '{$session->title}' a été créée pour le {$session->starts_at->format('d/m/Y à H:i')}.",

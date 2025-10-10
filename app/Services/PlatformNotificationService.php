@@ -131,7 +131,7 @@ class PlatformNotificationService
         $message = "La session '{$sessionData['title']}' s'est terminée. Les résultats sont disponibles.";
 
         return $this->createBulkNotifications(
-            $administrators,
+            $administrators->pluck('user_id')->toArray(),
             PlatformNotification::TYPE_SESSION_COMPLETED,
             $title,
             $message,

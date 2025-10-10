@@ -323,14 +323,6 @@ Route::middleware(['auth:sanctum', 'teacher'])->prefix('teacher')->group(functio
     Route::post('results/{id}/mark-graded', [ResultController::class, 'markAsGraded']);
     Route::post('results/{id}/publish', [ResultController::class, 'publish']);
     Route::get('quiz/{quizId}/results', [ResultController::class, 'allResultsForQuiz']); 
-
-    // ===== HISTORIQUE ENSEIGNANT =====
-    Route::prefix('history')->name('history.')->group(function () {
-        Route::get('/', [TeacherHistoryController::class, 'index'])->name('index');
-        Route::get('/quizzes', [TeacherHistoryController::class, 'quizHistory'])->name('quizzes');
-        Route::get('/sessions', [TeacherHistoryController::class, 'sessionHistory'])->name('sessions');
-        Route::get('/results', [TeacherHistoryController::class, 'resultsHistory'])->name('results');
-    });
 });
 
 
@@ -348,6 +340,8 @@ Route::fallback(function(){
 });
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ReportController;
+use App\Http\Controllers\Admin\AdminTeacherNotificationController;
+use App\Http\Controllers\Admin\NotificationController;
 
 Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     // Dashboard
