@@ -109,6 +109,21 @@ class QuizController extends Controller
         return response()->json($quiz->load(['subject', 'questions']));
     }
 
+    public function getQuestions($quizId)
+    {
+        $teacher = $this->getAuthenticatedTeacher();
+        $quiz = Quiz::where('teacher_id', $teacher->id)->findOrFail($quizId);
+        
+        return response()->json([
+            'quiz' => [
+                'id' => $quiz->id,
+                'title' => $quiz->title,
+                'total_questions' => $quiz->questions->count()
+            ],
+            'questions' => $quiz->questions
+        ]);
+    }
+
     public function update(Request $request, $id)
     {
         $teacher = $this->getAuthenticatedTeacher();

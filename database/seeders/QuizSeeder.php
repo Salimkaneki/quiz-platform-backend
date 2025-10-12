@@ -273,23 +273,30 @@ class QuizSeeder extends Seeder
                 continue;
             }
 
-            $quiz = Quiz::create([
-                'title' => $quizData['title'],
-                'description' => $quizData['description'],
-                'subject_id' => $subject->id,
-                'teacher_id' => $teacher->id,
-                'duration_minutes' => $quizData['duration_minutes'],
-                'total_points' => array_sum(array_column($quizData['questions'], 'points')),
-                'shuffle_questions' => true,
-                'show_results_immediately' => false,
-                'allow_review' => true,
-                'status' => $quizData['status'],
-                'settings' => [
-                    'max_attempts' => 1,
-                    'shuffle_answers' => true,
-                    'show_explanation' => true,
+            $quiz = Quiz::updateOrCreate(
+                [
+                    'teacher_id' => $teacher->id,
+                    'title' => $quizData['title'],
+                    'subject_id' => $subject->id,
                 ],
-            ]);
+                [
+                    'description' => $quizData['description'],
+                    'duration_minutes' => $quizData['duration_minutes'],
+                    'total_points' => array_sum(array_column($quizData['questions'], 'points')),
+                    'shuffle_questions' => true,
+                    'show_results_immediately' => false,
+                    'allow_review' => true,
+                    'status' => $quizData['status'],
+                    'settings' => [
+                        'max_attempts' => 1,
+                        'shuffle_answers' => true,
+                        'show_explanation' => true,
+                    ],
+                ]
+            );
+
+            // Supprimer les questions existantes et en créer de nouvelles
+            $quiz->questions()->delete();
 
             foreach ($quizData['questions'] as $questionData) {
                 $question = new Question([

@@ -14,67 +14,18 @@ class TeacherSubjectSeeder extends Seeder
     public function run(): void
     {
         $teacherSubjects = [
-            // Salim Pereira - Informatique UL
+            // Salim Pereira - Informatique ESGIS Togo
             [
-                'teacher_email' => 'salimpereira01@gmail.com',
-                'subject_codes' => ['ALGO-INFO-UL-101', 'MATH-DISC-INFO-UL-102', 'ARCHI-INFO-UL-201', 'BDD-INFO-UL-202'],
-                'class_names' => ['L1 Informatique', 'L2 Informatique', 'L3 Informatique'],
+                'teacher_email' => 'salim.pereira@esgis.tg',
+                'subject_codes' => ['ALGO-INFO-ESGIS-101', 'MATH-DISC-INFO-ESGIS-102', 'ARCHI-INFO-ESGIS-201', 'BDD-INFO-ESGIS-202'],
+                'class_names' => ['L1 Informatique ESGIS Togo', 'L2 Informatique ESGIS Togo', 'L3 Informatique ESGIS Togo'],
                 'academic_year' => '2024-2025',
             ],
-            // Marie Kouassi - Mathématiques UL
+            // Sophie Ouattara - Informatique ESGIS Togo
             [
-                'teacher_email' => 'marie.kouassi@ul.edu.tg',
-                'subject_codes' => ['MATH-DISC-INFO-UL-102'],
-                'class_names' => ['L1 Informatique', 'L1 Génie Civil', 'L2 Informatique'],
-                'academic_year' => '2024-2025',
-            ],
-            // Jean Diallo - Physique UL
-            [
-                'teacher_email' => 'jean.diallo@ul.edu.tg',
-                'subject_codes' => ['ANALOG-ELEC-ISM-101'],
-                'class_names' => ['L1 Informatique', 'L1 Génie Civil', 'L2 Informatique'],
-                'academic_year' => '2024-2025',
-            ],
-            // Fatima Traore - Chimie UL
-            [
-                'teacher_email' => 'fatima.traore@ul.edu.tg',
-                'subject_codes' => ['BIOCHIM-MED-UL-102'],
-                'class_names' => ['L1 Informatique', 'L1 Génie Civil', 'L2 Informatique'],
-                'academic_year' => '2024-2025',
-            ],
-            // Ahmed Bamba - Génie Civil UL
-            [
-                'teacher_email' => 'ahmed.bamba@ul.edu.tg',
-                'subject_codes' => ['RESIST-GC-UL-101', 'TOPO-GC-UL-102', 'BETON-GC-UL-201'],
-                'class_names' => ['L1 Génie Civil', 'L2 Génie Civil'],
-                'academic_year' => '2024-2025',
-            ],
-            // Aminata Sow - Médecine UL
-            [
-                'teacher_email' => 'aminata.sow@ul.edu.tg',
-                'subject_codes' => ['ANAT-MED-UL-101', 'BIOCHIM-MED-UL-102', 'PHYSIO-MED-UL-201'],
-                'class_names' => ['L1 Médecine', 'L2 Médecine'],
-                'academic_year' => '2024-2025',
-            ],
-            // Paul Konate - Développement Web ISM
-            [
-                'teacher_email' => 'paul.konate@ism.tg',
-                'subject_codes' => ['HTML-WEB-ISM-101', 'PHP-WEB-ISM-102', 'REACT-WEB-ISM-201'],
-                'class_names' => ['Promo 2024-2026 Web', 'Promo 2025-2027 Web'],
-                'academic_year' => '2024-2025',
-            ],
-            // Sophie Ouattara - Électronique ISM
-            [
-                'teacher_email' => 'sophie.ouattara@ism.tg',
-                'subject_codes' => ['ANALOG-ELEC-ISM-101', 'EMBARQUE-ELEC-ISM-102'],
-                'class_names' => ['Promo 2024-2026 Électronique'],
-                'academic_year' => '2024-2025',
-            ],
-            // Michel Camara - Comptabilité ISM
-            [
-                'teacher_email' => 'michel.camara@ism.tg',
-                'subject_codes' => ['COMPTA-GEN-ISM-101', 'FINANCE-ISM-102'],
-                'class_names' => ['Promo 2024-2026 Comptabilité'],
+                'teacher_email' => 'sophie.ouattara@esgis.tg',
+                'subject_codes' => ['POO-INFO-ESGIS-301', 'RESEAUX-INFO-ESGIS-302', 'WEB-INFO-ESGIS-401', 'IA-INFO-ESGIS-402'],
+                'class_names' => ['L1 Informatique ESGIS Togo', 'L2 Informatique ESGIS Togo', 'L3 Informatique ESGIS Togo'],
                 'academic_year' => '2024-2025',
             ],
         ];

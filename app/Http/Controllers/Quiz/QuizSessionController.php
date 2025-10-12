@@ -93,7 +93,7 @@ class QuizSessionController extends Controller
 
         if ($users->isNotEmpty()) {
             $notificationService->createBulkNotifications(
-                $users,
+                $users->pluck('id')->toArray(), // Convertir la Collection en array d'IDs
                 PlatformNotification::TYPE_QUIZ_SESSION_CREATED,
                 'Nouvelle session d\'examen',
                 "Une nouvelle session d'examen '{$session->title}' a été créée pour le {$session->starts_at->format('d/m/Y à H:i')}.",

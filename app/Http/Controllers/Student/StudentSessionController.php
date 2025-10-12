@@ -361,5 +361,27 @@ class StudentSessionController extends Controller
             ]
         ]);
     }
+
+    /**
+     * Vérifier si l'étudiant participe à une session
+     * GET /api/student/sessions/{id}/check-participation
+     */
+    public function checkParticipation($id)
+    {
+        $user = Auth::user();
+        if (!$user || $user->account_type !== 'student') {
+            return response()->json(['error' => 'Accès réservé aux étudiants'], 403);
+        }
+
+        $result = Result::where('quiz_session_id', $id)
+            ->where('student_id', $user->id)
+            ->first();
+
+        return response()->json([
+            'has_joined' => $result ? true : false,
+            'result_id' => $result ? $result->id : null,
+            'status' => $result ? $result->status : null
+        ]);
+    }
 }
 

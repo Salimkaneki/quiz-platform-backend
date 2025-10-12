@@ -16,7 +16,6 @@ class StudentFactory extends Factory
      */
     public function definition(): array
     {
-        $class = \App\Models\Classes::factory()->create();
         $firstName = fake()->firstName();
         $lastName = fake()->lastName();
         
@@ -37,8 +36,8 @@ class StudentFactory extends Factory
                 'notifications' => fake()->boolean(),
             ],
             'profile_picture' => null,
-            'class_id' => $class->id,
-            'institution_id' => $class->institution_id,
+            'class_id' => null, // Temporairement null pour éviter le problème
+            'institution_id' => null, // Temporairement null
             'is_active' => true,
             'metadata' => [
                 'enrollment_date' => fake()->dateTimeBetween('-2 years', 'now'),

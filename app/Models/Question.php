@@ -94,7 +94,10 @@ class Question extends Model
     public function getCorrectOptionAttribute()
     {
         if ($this->isMultipleChoice() && $this->options) {
-            return collect($this->options)->where('is_correct', true)->first();
+            $options = is_string($this->options) ? json_decode($this->options, true) : $this->options;
+            return collect($options)->first(function ($option) {
+                return !empty($option['is_correct']) && $option['is_correct'] !== false && $option['is_correct'] !== null;
+            });
         }
         return null;
     }
@@ -105,7 +108,10 @@ class Question extends Model
     public function getCorrectOptionsAttribute()
     {
         if ($this->isMultipleChoice() && $this->options) {
-            return collect($this->options)->where('is_correct', true)->values()->toArray();
+            $options = is_string($this->options) ? json_decode($this->options, true) : $this->options;
+            return collect($options)->filter(function ($option) {
+                return !empty($option['is_correct']) && $option['is_correct'] !== false && $option['is_correct'] !== null;
+            })->values()->toArray();
         }
         return [];
     }
@@ -161,12 +167,15 @@ class Question extends Model
             return true;
         }
 
-        if (empty($this->options) || !is_array($this->options)) {
+        $options = is_string($this->options) ? json_decode($this->options, true) : $this->options;
+        if (empty($options) || !is_array($options)) {
             return false;
         }
 
         // Vérifie qu'au moins une option est marquée comme correcte
-        return collect($this->options)->contains('is_correct', true);
+        return collect($options)->contains(function ($option) {
+            return !empty($option['is_correct']) && $option['is_correct'] !== false && $option['is_correct'] !== null;
+        });
     }
 
     /**
@@ -191,11 +200,12 @@ class Question extends Model
             return [];
         }
 
-        return collect($this->options)->map(function ($option, $index) {
+        $options = is_string($this->options) ? json_decode($this->options, true) : $this->options;
+        return collect($options)->map(function ($option, $index) {
             return [
                 'id' => $index,
                 'text' => $option['text'] ?? '',
-                'is_correct' => $option['is_correct'] ?? false,
+                'is_correct' => (!empty($option['is_correct']) && $option['is_correct'] !== false && $option['is_correct'] !== null),
             ];
         })->values()->toArray();
     }

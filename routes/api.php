@@ -215,6 +215,21 @@ Route::prefix('teacher')->name('teacher.')->middleware(['auth:sanctum', 'teacher
         'update' => 'quizzes.update',
         'destroy' => 'quizzes.destroy'
     ]);
+    
+    // Route personnalisée pour récupérer les questions d'un quiz
+    Route::get('quizzes/{quiz}/questions', [QuizController::class, 'getQuestions'])->name('quizzes.questions');
+    
+    // ===== QUESTIONS =====
+    Route::apiResource('quizzes.questions', QuestionController::class)->names([
+        'index' => 'questions.index',
+        'store' => 'questions.store',
+        'show' => 'questions.show',
+        'update' => 'questions.update',
+        'destroy' => 'questions.destroy'
+    ]);
+    
+    // Route personnalisée pour créer plusieurs questions en batch
+    Route::post('quizzes/{quiz}/questions/batch', [QuestionController::class, 'batchStore'])->name('questions.batch_store');
 
     // ===== QUIZ SESSIONS =====
     Route::prefix('sessions')->name('sessions.')->group(function () {
@@ -223,17 +238,17 @@ Route::prefix('teacher')->name('teacher.')->middleware(['auth:sanctum', 'teacher
         Route::get('/{id}', [QuizSessionController::class, 'show'])->name('show');
         Route::put('/{id}', [QuizSessionController::class, 'update'])->name('update');
         Route::delete('/{id}', [QuizSessionController::class, 'destroy'])->name('destroy');
-        
+
         // Actions sur les sessions
         Route::patch('/{id}/activate', [QuizSessionController::class, 'activate'])->name('activate');
         Route::patch('/{id}/complete', [QuizSessionController::class, 'complete'])->name('complete');
         Route::patch('/{id}/cancel', [QuizSessionController::class, 'cancel'])->name('cancel');
-        
+
         // Gestion des doublons
         Route::get('duplicates', [QuizSessionController::class, 'detectDuplicates'])->name('duplicates.detect');
         Route::post('clean-duplicates', [QuizSessionController::class, 'cleanDuplicates'])->name('duplicates.clean');
     });
-    
+
     // ===== NOTIFICATIONS ENSEIGNANT =====
     Route::prefix('notifications')->name('teacher.notifications.')->group(function () {
         Route::get('/', [TeacherNotificationController::class, 'index'])->name('index');
@@ -263,6 +278,7 @@ use App\Http\Controllers\Student\StudentSessionController;
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/student/sessions', [StudentSessionController::class, 'index']);
     Route::get('/student/sessions/{id}', [StudentSessionController::class, 'show']);
+    Route::get('/student/sessions/{id}/check-participation', [StudentSessionController::class, 'checkParticipation']);
     Route::post('/student/session/join', [StudentSessionController::class, 'joinSession']);
     
     // Nouvelles routes pour la navigation dans le quiz

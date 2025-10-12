@@ -16,13 +16,14 @@ class StudentSeeder extends Seeder
     public function run(): void
     {
         $students = [
+            // Étudiants ESGIS Togo - Informatique L1
             [
                 'first_name' => 'Kofi',
                 'last_name' => 'Amani',
-                'email' => 'kofi.amani@ul.edu.tg',
-                'birth_date' => Carbon::createFromDate(2002, 5, 15),
+                'email' => 'kofi.amani@esgis.tg',
+                'birth_date' => Carbon::createFromDate(2003, 5, 15),
                 'phone' => '+228 90 12 34 56',
-                'class_id' => Classes::where('name', 'L1 Informatique')->where('academic_year', '2024-2025')->first()->id,
+                'class_id' => Classes::where('name', 'L1 Informatique ESGIS Togo')->where('academic_year', '2024-2025')->first()->id,
                 'is_active' => true,
                 'metadata' => [
                     'address' => 'Rue des Étudiants, Lomé',
@@ -34,17 +35,17 @@ class StudentSeeder extends Seeder
                 ],
             ],
             [
-                'first_name' => 'Fatou',
-                'last_name' => 'Diallo',
-                'email' => 'fatou.diallo@ul.edu.tg',
-                'birth_date' => Carbon::createFromDate(2001, 8, 22),
-                'phone' => '+228 90 23 45 67',
-                'class_id' => Classes::where('name', 'L1 Informatique')->where('academic_year', '2024-2025')->first()->id,
+                'first_name' => 'Fatima',
+                'last_name' => 'Traore',
+                'email' => 'fatima.traore@esgis.tg',
+                'birth_date' => Carbon::createFromDate(2002, 7, 12),
+                'phone' => '+228 91 23 45 67',
+                'class_id' => Classes::where('name', 'L1 Informatique ESGIS Togo')->where('academic_year', '2024-2025')->first()->id,
                 'is_active' => true,
                 'metadata' => [
                     'address' => 'Avenue de la Paix, Lomé',
-                    'emergency_contact' => 'M. Diallo',
-                    'emergency_phone' => '+228 91 34 56 78',
+                    'emergency_contact' => 'M. Traore',
+                    'emergency_phone' => '+228 92 34 56 78',
                     'nationality' => 'Togolaise',
                     'registration_date' => Carbon::createFromDate(2024, 9, 1),
                     'scholarship' => true,
@@ -52,16 +53,16 @@ class StudentSeeder extends Seeder
             ],
             [
                 'first_name' => 'Ahmed',
-                'last_name' => 'Baba',
-                'email' => 'ahmed.baba@ul.edu.tg',
-                'birth_date' => Carbon::createFromDate(2003, 3, 10),
-                'phone' => '+228 90 34 56 78',
-                'class_id' => Classes::where('name', 'L1 Informatique')->where('academic_year', '2024-2025')->first()->id,
+                'last_name' => 'Bamba',
+                'email' => 'ahmed.bamba@esgis.tg',
+                'birth_date' => Carbon::createFromDate(2003, 11, 8),
+                'phone' => '+228 92 34 56 78',
+                'class_id' => Classes::where('name', 'L1 Informatique ESGIS Togo')->where('academic_year', '2024-2025')->first()->id,
                 'is_active' => true,
                 'metadata' => [
                     'address' => 'Boulevard du 13 Janvier, Lomé',
-                    'emergency_contact' => 'Mme Baba',
-                    'emergency_phone' => '+228 91 45 67 89',
+                    'emergency_contact' => 'Mme Bamba',
+                    'emergency_phone' => '+228 93 45 67 89',
                     'nationality' => 'Togolaise',
                     'registration_date' => Carbon::createFromDate(2024, 9, 1),
                     'scholarship' => false,
@@ -70,15 +71,15 @@ class StudentSeeder extends Seeder
             [
                 'first_name' => 'Amina',
                 'last_name' => 'Sow',
-                'email' => 'amina.sow@ul.edu.tg',
-                'birth_date' => Carbon::createFromDate(2002, 11, 5),
-                'phone' => '+228 90 45 67 89',
-                'class_id' => Classes::where('name', 'L2 Informatique')->where('academic_year', '2024-2025')->first()->id,
+                'email' => 'amina.sow@esgis.tg',
+                'birth_date' => Carbon::createFromDate(2002, 1, 25),
+                'phone' => '+228 93 45 67 89',
+                'class_id' => Classes::where('name', 'L1 Informatique ESGIS Togo')->where('academic_year', '2024-2025')->first()->id,
                 'is_active' => true,
                 'metadata' => [
                     'address' => 'Rue de la Solidarité, Lomé',
                     'emergency_contact' => 'M. Sow',
-                    'emergency_phone' => '+228 91 56 78 90',
+                    'emergency_phone' => '+228 94 56 78 90',
                     'nationality' => 'Togolaise',
                     'registration_date' => Carbon::createFromDate(2024, 9, 1),
                     'scholarship' => true,
@@ -87,32 +88,34 @@ class StudentSeeder extends Seeder
             [
                 'first_name' => 'Youssef',
                 'last_name' => 'Toure',
-                'email' => 'youssef.toure@ul.edu.tg',
-                'birth_date' => Carbon::createFromDate(2001, 7, 18),
-                'phone' => '+228 90 56 78 90',
-                'class_id' => Classes::where('name', 'L2 Informatique')->where('academic_year', '2024-2025')->first()->id,
+                'email' => 'youssef.toure@esgis.tg',
+                'birth_date' => Carbon::createFromDate(2003, 9, 14),
+                'phone' => '+228 94 56 78 90',
+                'class_id' => Classes::where('name', 'L1 Informatique ESGIS Togo')->where('academic_year', '2024-2025')->first()->id,
                 'is_active' => true,
                 'metadata' => [
                     'address' => 'Avenue Mohammed V, Lomé',
                     'emergency_contact' => 'Mme Toure',
-                    'emergency_phone' => '+228 91 67 89 01',
+                    'emergency_phone' => '+228 95 67 89 01',
                     'nationality' => 'Togolaise',
                     'registration_date' => Carbon::createFromDate(2024, 9, 1),
                     'scholarship' => false,
                 ],
             ],
+
+            // Étudiants ESGIS Togo - Informatique L2
             [
                 'first_name' => 'Mariam',
                 'last_name' => 'Kone',
-                'email' => 'mariam.kone@ul.edu.tg',
-                'birth_date' => Carbon::createFromDate(2003, 1, 30),
-                'phone' => '+228 90 67 89 01',
-                'class_id' => Classes::where('name', 'L3 Informatique')->where('academic_year', '2024-2025')->first()->id,
+                'email' => 'mariam.kone@esgis.tg',
+                'birth_date' => Carbon::createFromDate(2002, 5, 30),
+                'phone' => '+228 95 67 89 01',
+                'class_id' => Classes::where('name', 'L2 Informatique ESGIS Togo')->where('academic_year', '2024-2025')->first()->id,
                 'is_active' => true,
                 'metadata' => [
                     'address' => 'Rue des Commerçants, Lomé',
                     'emergency_contact' => 'M. Kone',
-                    'emergency_phone' => '+228 91 78 90 12',
+                    'emergency_phone' => '+228 96 78 90 12',
                     'nationality' => 'Togolaise',
                     'registration_date' => Carbon::createFromDate(2024, 9, 1),
                     'scholarship' => true,
@@ -121,15 +124,15 @@ class StudentSeeder extends Seeder
             [
                 'first_name' => 'Ibrahim',
                 'last_name' => 'Diouf',
-                'email' => 'ibrahim.diouf@ul.edu.tg',
-                'birth_date' => Carbon::createFromDate(2002, 9, 12),
-                'phone' => '+228 90 78 90 12',
-                'class_id' => Classes::where('name', 'L3 Informatique')->where('academic_year', '2024-2025')->first()->id,
+                'email' => 'ibrahim.diouf@esgis.tg',
+                'birth_date' => Carbon::createFromDate(2001, 9, 12),
+                'phone' => '+228 96 78 90 12',
+                'class_id' => Classes::where('name', 'L2 Informatique ESGIS Togo')->where('academic_year', '2024-2025')->first()->id,
                 'is_active' => true,
                 'metadata' => [
                     'address' => 'Boulevard de la République, Lomé',
                     'emergency_contact' => 'Mme Diouf',
-                    'emergency_phone' => '+228 91 89 01 23',
+                    'emergency_phone' => '+228 97 89 01 23',
                     'nationality' => 'Togolaise',
                     'registration_date' => Carbon::createFromDate(2024, 9, 1),
                     'scholarship' => false,
@@ -138,32 +141,34 @@ class StudentSeeder extends Seeder
             [
                 'first_name' => 'Zara',
                 'last_name' => 'Ouattara',
-                'email' => 'zara.ouattara@ul.edu.tg',
-                'birth_date' => Carbon::createFromDate(2001, 12, 8),
-                'phone' => '+228 90 89 01 23',
-                'class_id' => Classes::where('name', 'L3 Informatique')->where('academic_year', '2024-2025')->first()->id,
+                'email' => 'zara.ouattara@esgis.tg',
+                'birth_date' => Carbon::createFromDate(2002, 12, 8),
+                'phone' => '+228 97 89 01 23',
+                'class_id' => Classes::where('name', 'L2 Informatique ESGIS Togo')->where('academic_year', '2024-2025')->first()->id,
                 'is_active' => true,
                 'metadata' => [
                     'address' => 'Rue de l\'Indépendance, Lomé',
                     'emergency_contact' => 'M. Ouattara',
-                    'emergency_phone' => '+228 91 90 12 34',
+                    'emergency_phone' => '+228 98 90 12 34',
                     'nationality' => 'Togolaise',
                     'registration_date' => Carbon::createFromDate(2024, 9, 1),
                     'scholarship' => true,
                 ],
             ],
+
+            // Étudiants ESGIS Togo - Informatique L3
             [
                 'first_name' => 'Omar',
                 'last_name' => 'Traore',
-                'email' => 'omar.traore@ul.edu.tg',
-                'birth_date' => Carbon::createFromDate(2000, 6, 25),
-                'phone' => '+228 90 90 12 34',
-                'class_id' => Classes::where('name', 'L3 Informatique')->where('academic_year', '2024-2025')->first()->id,
+                'email' => 'omar.traore@esgis.tg',
+                'birth_date' => Carbon::createFromDate(2001, 6, 25),
+                'phone' => '+228 98 90 12 34',
+                'class_id' => Classes::where('name', 'L3 Informatique ESGIS Togo')->where('academic_year', '2024-2025')->first()->id,
                 'is_active' => true,
                 'metadata' => [
                     'address' => 'Avenue de la Victoire, Lomé',
                     'emergency_contact' => 'Mme Traore',
-                    'emergency_phone' => '+228 91 01 23 45',
+                    'emergency_phone' => '+228 99 01 23 45',
                     'nationality' => 'Togolaise',
                     'registration_date' => Carbon::createFromDate(2024, 9, 1),
                     'scholarship' => false,
@@ -172,15 +177,15 @@ class StudentSeeder extends Seeder
             [
                 'first_name' => 'Leila',
                 'last_name' => 'Camara',
-                'email' => 'leila.camara@ul.edu.tg',
-                'birth_date' => Carbon::createFromDate(2002, 4, 14),
-                'phone' => '+228 90 01 23 45',
-                'class_id' => Classes::where('name', 'L1 Génie Civil')->where('academic_year', '2024-2025')->first()->id,
+                'email' => 'leila.camara@esgis.tg',
+                'birth_date' => Carbon::createFromDate(2001, 4, 14),
+                'phone' => '+228 99 01 23 45',
+                'class_id' => Classes::where('name', 'L3 Informatique ESGIS Togo')->where('academic_year', '2024-2025')->first()->id,
                 'is_active' => true,
                 'metadata' => [
                     'address' => 'Rue de la Liberté, Lomé',
                     'emergency_contact' => 'M. Camara',
-                    'emergency_phone' => '+228 91 12 34 56',
+                    'emergency_phone' => '+228 90 12 34 56',
                     'nationality' => 'Togolaise',
                     'registration_date' => Carbon::createFromDate(2024, 9, 1),
                     'scholarship' => true,
@@ -190,6 +195,12 @@ class StudentSeeder extends Seeder
 
         $created = 0;
         foreach ($students as $index => $studentData) {
+            // Déterminer l'institution en fonction de l'email
+            $institutionId = null;
+            if (str_contains($studentData['email'], '@esgis.tg')) {
+                $institutionId = \App\Models\Institution::where('name', 'École Supérieure de Gestion et d\'Informatique du Togo')->first()->id;
+            }
+
             $user = User::firstOrCreate(
                 ['email' => $studentData['email']],
                 [
@@ -200,13 +211,28 @@ class StudentSeeder extends Seeder
                 ]
             );
 
-            $studentNumber = 'STD' . date('Y') . str_pad($index + 1, 4, '0', STR_PAD_LEFT);
+            // Vérifier si l'étudiant existe déjà
+            $existingStudent = Student::where('email', $studentData['email'])->first();
+            
+            if ($existingStudent) {
+                // Utiliser le numéro d'étudiant existant
+                $studentNumber = $existingStudent->student_number;
+            } else {
+                // Générer un nouveau numéro unique
+                $baseNumber = 'STD' . date('Y');
+                $counter = 1;
+                do {
+                    $studentNumber = $baseNumber . str_pad($counter, 4, '0', STR_PAD_LEFT);
+                    $counter++;
+                } while (Student::where('student_number', $studentNumber)->exists());
+            }
 
             $student = Student::updateOrCreate(
                 ['email' => $studentData['email']],
                 array_merge($studentData, [
                     'user_id' => $user->id,
                     'student_number' => $studentNumber,
+                    'institution_id' => $institutionId,
                 ])
             );
 
