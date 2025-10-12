@@ -17,14 +17,14 @@ class StudentResponseController extends Controller
     {
         \Log::info('Starting submitResponses', ['resultId' => $resultId, 'user' => Auth::id()]);
 
-        $student = Auth::user()->student;
-        if (!$student) {
-            \Log::info('No student found for user', ['user' => Auth::id()]);
+        $user = Auth::user();
+        if (!$user || $user->account_type !== 'student') {
+            \Log::info('User not authorized', ['user' => Auth::id(), 'account_type' => $user->account_type ?? 'null']);
             return response()->json(['error' => 'Accès réservé aux étudiants'], 403);
         }
 
         $result = Result::where('id', $resultId)
-            ->where('student_id', $student->id)
+            ->where('student_id', $user->id)
             ->with('quizSession.quiz')
             ->firstOrFail();
 

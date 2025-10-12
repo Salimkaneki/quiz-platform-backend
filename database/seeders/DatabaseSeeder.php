@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
             TeacherSeeder::class,
             TeacherSubjectSeeder::class,
             QuizSeeder::class,
+            EsgisQuizSeeder::class,
             PedagogiqueAdminSeeder::class,
             UserSeeder::class,
         ]);

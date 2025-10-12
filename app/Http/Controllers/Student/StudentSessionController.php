@@ -65,52 +65,63 @@ class StudentSessionController extends Controller
     /**
      * Lister les sessions d'examen disponibles pour l'étudiant
      */
-    public function index()
-    {
-        $user = Auth::user();
-        if (!$user || $user->account_type !== 'student') {
-            return response()->json(['error' => 'Accès réservé aux étudiants'], 403);
-        }
 
-        // Récupérer les sessions actives (l'heure est vérifiée lors de la tentative de rejoindre)
-        $sessions = QuizSession::with('quiz.subject')
-            ->where('status', 'active')
-            ->get()
-            ->map(function($session) {
-                $now = now();
-                if ($now->lt($session->starts_at)) {
-                    $join_status = 'à venir';
-                } elseif ($now->gt($session->ends_at)) {
-                    $join_status = 'terminée';
-                } else {
-                    $join_status = 'disponible';
-                }
-                return [
-                    'id' => $session->id,
-                    'title' => $session->title,
-                    'session_code' => $session->session_code,
-                    'status' => $session->status,
-                    'starts_at' => $session->starts_at,
-                    'ends_at' => $session->ends_at,
-                    'max_participants' => $session->max_participants,
-                    'join_status' => $join_status,
-                    'quiz' => [
-                        'id' => $session->quiz->id,
-                        'title' => $session->quiz->title,
-                        'subject' => $session->quiz->subject ? [
-                            'id' => $session->quiz->subject->id,
-                            'name' => $session->quiz->subject->name
-                        ] : null,
-                        'duration_minutes' => $session->quiz->duration_minutes
-                    ]
-                ];
-            });
-
-        return response()->json([
-            'sessions' => $sessions,
-            'total' => $sessions->count()
-        ]);
+/**
+ * Lister les sessions d'examen disponibles pour l'étudiant
+ */
+public function index()
+{
+    $user = Auth::user();
+    if (!$user || $user->account_type !== 'student') {
+        return response()->json(['error' => 'Accès réservé aux étudiants'], 403);
     }
+
+    // Récupérer les sessions actives (l'heure est vérifiée lors de la tentative de rejoindre)
+    $sessions = QuizSession::with('quiz.subject')
+        ->where('status', 'active')
+        ->get()
+        ->map(function($session) use ($user) {
+            $now = now();
+            if ($now->lt($session->starts_at)) {
+                $join_status = 'à venir';
+            } elseif ($now->gt($session->ends_at)) {
+                $join_status = 'terminée';
+            } else {
+                $join_status = 'disponible';
+            }
+
+            // Vérifier si l'étudiant a déjà rejoint cette session
+            $has_joined = Result::where('quiz_session_id', $session->id)
+                ->where('student_id', $user->id)
+                ->exists();
+
+            return [
+                'id' => $session->id,
+                'title' => $session->title,
+                'session_code' => $session->session_code,
+                'status' => $session->status,
+                'starts_at' => $session->starts_at,
+                'ends_at' => $session->ends_at,
+                'max_participants' => $session->max_participants,
+                'join_status' => $join_status,
+                'has_joined' => $has_joined,
+                'quiz' => [
+                    'id' => $session->quiz->id,
+                    'title' => $session->quiz->title,
+                    'subject' => $session->quiz->subject ? [
+                        'id' => $session->quiz->subject->id,
+                        'name' => $session->quiz->subject->name
+                    ] : null,
+                    'duration_minutes' => $session->quiz->duration_minutes
+                ]
+            ];
+        });
+
+    return response()->json([
+        'sessions' => $sessions,
+        'total' => $sessions->count()
+    ]);
+}
 
     /**
      * Rejoindre une session via son code
