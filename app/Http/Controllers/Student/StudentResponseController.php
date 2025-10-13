@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
 use App\Models\Result;
+use App\Models\Student;
 use App\Models\StudentResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -23,8 +24,14 @@ class StudentResponseController extends Controller
             return response()->json(['error' => 'Accès réservé aux étudiants'], 403);
         }
 
+        // Récupérer le profil étudiant
+        $student = Student::where('user_id', $user->id)->first();
+        if (!$student) {
+            return response()->json(['error' => 'Profil étudiant non trouvé'], 403);
+        }
+
         $result = Result::where('id', $resultId)
-            ->where('student_id', $user->id)
+            ->where('student_id', $student->id)
             ->with('quizSession.quiz')
             ->firstOrFail();
 
@@ -112,7 +119,17 @@ class StudentResponseController extends Controller
      */
     public function index($resultId)
     {
-        $student = Auth::user()->student;
+        $user = Auth::user();
+        if (!$user || $user->account_type !== 'student') {
+            return response()->json(['error' => 'Accès réservé aux étudiants'], 403);
+        }
+
+        // Récupérer le profil étudiant
+        $student = Student::where('user_id', $user->id)->first();
+        if (!$student) {
+            return response()->json(['error' => 'Profil étudiant non trouvé'], 403);
+        }
+
         $result = Result::where('id', $resultId)
             ->where('student_id', $student->id)
             ->firstOrFail();
@@ -130,7 +147,17 @@ class StudentResponseController extends Controller
      */
     public function show($resultId, $questionId)
     {
-        $student = Auth::user()->student;
+        $user = Auth::user();
+        if (!$user || $user->account_type !== 'student') {
+            return response()->json(['error' => 'Accès réservé aux étudiants'], 403);
+        }
+
+        // Récupérer le profil étudiant
+        $student = Student::where('user_id', $user->id)->first();
+        if (!$student) {
+            return response()->json(['error' => 'Profil étudiant non trouvé'], 403);
+        }
+
         $result = Result::where('id', $resultId)
             ->where('student_id', $student->id)
             ->firstOrFail();

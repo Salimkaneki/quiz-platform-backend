@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Student;
 use App\Http\Controllers\Controller;
 use App\Models\QuizSession;
 use App\Models\Result;
+use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -20,9 +21,15 @@ class StudentSessionController extends Controller
             return response()->json(['error' => 'Accès réservé aux étudiants'], 403);
         }
 
+        // Récupérer le profil étudiant
+        $student = Student::where('user_id', $user->id)->first();
+        if (!$student) {
+            return response()->json(['error' => 'Profil étudiant non trouvé'], 403);
+        }
+
         // Vérifier que l'étudiant participe à cette session
         $result = Result::where('quiz_session_id', $id)
-            ->where('student_id', $user->id)
+            ->where('student_id', $student->id)
             ->first();
 
         if (!$result) {
@@ -76,11 +83,17 @@ public function index()
         return response()->json(['error' => 'Accès réservé aux étudiants'], 403);
     }
 
+    // Récupérer le profil étudiant
+    $student = Student::where('user_id', $user->id)->first();
+    if (!$student) {
+        return response()->json(['error' => 'Profil étudiant non trouvé'], 403);
+    }
+
     // Récupérer les sessions actives (l'heure est vérifiée lors de la tentative de rejoindre)
     $sessions = QuizSession::with('quiz.subject')
         ->where('status', 'active')
         ->get()
-        ->map(function($session) use ($user) {
+        ->map(function($session) use ($user, $student) {
             $now = now();
             if ($now->lt($session->starts_at)) {
                 $join_status = 'à venir';
@@ -92,7 +105,7 @@ public function index()
 
             // Vérifier si l'étudiant a déjà rejoint cette session
             $has_joined = Result::where('quiz_session_id', $session->id)
-                ->where('student_id', $user->id)
+                ->where('student_id', $student->id)
                 ->exists();
 
             return [
@@ -135,6 +148,12 @@ public function index()
         $user = Auth::user();
         if (!$user || $user->account_type !== 'student') {
             return response()->json(['error' => 'Accès réservé aux étudiants'], 403);
+        }
+
+        // Récupérer le profil étudiant
+        $student = Student::where('user_id', $user->id)->first();
+        if (!$student) {
+            return response()->json(['error' => 'Profil étudiant non trouvé'], 403);
         }
 
         // Chercher la session par code
@@ -180,7 +199,7 @@ public function index()
         $result = Result::firstOrCreate(
             [
                 'quiz_session_id' => $session->id,
-                'student_id' => $user->id  // Utiliser $user->id au lieu de $student->id
+                'student_id' => $student->id
             ],
             [
                 'status' => Result::STATUS_IN_PROGRESS,
@@ -224,9 +243,15 @@ public function index()
             return response()->json(['error' => 'Accès réservé aux étudiants'], 403);
         }
 
+        // Récupérer le profil étudiant
+        $student = Student::where('user_id', $user->id)->first();
+        if (!$student) {
+            return response()->json(['error' => 'Profil étudiant non trouvé'], 403);
+        }
+
         // Vérifier que l'étudiant participe à cette session
         $result = Result::where('quiz_session_id', $sessionId)
-            ->where('student_id', $user->id)  // Utiliser $user->id
+            ->where('student_id', $student->id)
             ->first();
 
         if (!$result) {
@@ -288,9 +313,15 @@ public function index()
             return response()->json(['error' => 'Accès réservé aux étudiants'], 403);
         }
 
+        // Récupérer le profil étudiant
+        $student = Student::where('user_id', $user->id)->first();
+        if (!$student) {
+            return response()->json(['error' => 'Profil étudiant non trouvé'], 403);
+        }
+
         // Vérifier que l'étudiant participe à cette session
         $result = Result::where('quiz_session_id', $sessionId)
-            ->where('student_id', $user->id)  // Utiliser $user->id
+            ->where('student_id', $student->id)
             ->first();
 
         if (!$result) {
@@ -303,7 +334,7 @@ public function index()
 
         // Vérifier si l'étudiant a déjà répondu à cette question
         $existingResponse = \App\Models\StudentResponse::where('quiz_session_id', $sessionId)
-            ->where('student_id', $user->id)  // Utiliser $user->id
+            ->where('student_id', $student->id)
             ->where('question_id', $questionId)
             ->first();
 
@@ -341,14 +372,20 @@ public function index()
             return response()->json(['error' => 'Accès réservé aux étudiants'], 403);
         }
 
+        // Récupérer le profil étudiant
+        $student = Student::where('user_id', $user->id)->first();
+        if (!$student) {
+            return response()->json(['error' => 'Profil étudiant non trouvé'], 403);
+        }
+
         $result = Result::where('quiz_session_id', $sessionId)
-            ->where('student_id', $user->id)  // Utiliser $user->id
+            ->where('student_id', $student->id)
             ->with('quizSession.quiz.questions')
             ->firstOrFail();
 
         $totalQuestions = $result->quizSession->quiz->questions->count();
         $answeredQuestions = \App\Models\StudentResponse::where('quiz_session_id', $sessionId)
-            ->where('student_id', $user->id)  // Utiliser $user->id
+            ->where('student_id', $student->id)
             ->count();
 
         $progress = [
@@ -384,8 +421,14 @@ public function index()
             return response()->json(['error' => 'Accès réservé aux étudiants'], 403);
         }
 
+        // Récupérer le profil étudiant
+        $student = Student::where('user_id', $user->id)->first();
+        if (!$student) {
+            return response()->json(['error' => 'Profil étudiant non trouvé'], 403);
+        }
+
         $result = Result::where('quiz_session_id', $id)
-            ->where('student_id', $user->id)
+            ->where('student_id', $student->id)
             ->first();
 
         return response()->json([
