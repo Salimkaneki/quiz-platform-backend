@@ -20,6 +20,7 @@ use App\Http\Controllers\Management\TeacherSubjectController;
 use App\Http\Controllers\Admin\StudentImportController;
 use App\Http\Controllers\Admin\QuizController as AdminQuizController;
 use App\Http\Controllers\Admin\AdminQuizSessionController;
+use App\Http\Controllers\Admin\AdminResultController;
 
 // Teacher Controllers
 use App\Http\Controllers\Auth\TeacherAuthController;
@@ -389,4 +390,9 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
         Route::post('/send-to-teacher/{teacherId}', [AdminTeacherNotificationController::class, 'sendToSpecificTeacher'])->name('send_to_teacher');
         Route::post('/send-to-multiple', [AdminTeacherNotificationController::class, 'sendToMultipleTeachers'])->name('send_to_multiple');
     });
+
+    // Results
+    Route::get('quiz-sessions/{quizSessionId}/results', [AdminResultController::class, 'index']);
+    Route::get('results/{id}', [AdminResultController::class, 'show']);
+    Route::get('quiz/{quizId}/results', [AdminResultController::class, 'allResultsForQuiz']);
 });
