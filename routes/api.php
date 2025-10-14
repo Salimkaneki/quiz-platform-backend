@@ -356,7 +356,6 @@ Route::middleware(['auth:sanctum', 'student'])->prefix('student')->group(functio
 });
 
 Route::prefix('teacher')->middleware(['auth:sanctum'])->group(function () {
-    Route::get('/sessions', [ResultController::class, 'getCompletedSessions']);
     Route::get('/quiz/{quizSessionId}/results', [ResultController::class, 'index']);
     Route::get('/results/{id}', [ResultController::class, 'show']);
     Route::put('/results/{id}', [ResultController::class, 'update']);
