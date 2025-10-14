@@ -23,7 +23,7 @@ class QuizSessionController extends Controller
         $teacher = $this->getAuthenticatedTeacher();
 
         // Temporaire : retourner toutes les sessions pour debug
-        $query = QuizSession::with(['quiz.subject']);
+        $query = QuizSession::query();
 
         // Filtres optionnels
         if (request()->has('status')) {
@@ -34,17 +34,10 @@ class QuizSessionController extends Controller
             $query->where('quiz_id', request('quiz_id'));
         }
 
-        $sessions = $query->latest()
-            ->paginate(request()->get('per_page', 15));
+        $sessions = $query->latest()->get();
 
         return response()->json([
-            'sessions' => $sessions->items(),
-            'pagination' => [
-                'current_page' => $sessions->currentPage(),
-                'last_page' => $sessions->lastPage(),
-                'per_page' => $sessions->perPage(),
-                'total' => $sessions->total(),
-            ],
+            'sessions' => $sessions,
             'debug' => [
                 'teacher_user_id' => $teacher->user_id,
                 'auth_user_id' => auth()->id(),
