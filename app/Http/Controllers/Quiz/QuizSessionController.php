@@ -23,7 +23,7 @@ class QuizSessionController extends Controller
         $teacher = $this->getAuthenticatedTeacher();
 
         // Temporaire : retourner toutes les sessions pour debug
-        $query = QuizSession::query();
+        $query = QuizSession::query()->where('teacher_id', $teacher->user_id);
 
         // Filtres optionnels
         if (request()->has('status')) {
@@ -327,5 +327,17 @@ class QuizSessionController extends Controller
             'completion_rate' => round(($submittedResults->count() / $totalParticipants) * 100, 2),
             'score_distribution' => $scoreDistribution,
         ];
+    }
+
+    public function sessionResults($id)
+    {
+        $teacher = $this->getAuthenticatedTeacher();
+        $session = QuizSession::findOrFail($id);
+
+        $this->authorizeTeacherResource($session, 'session');
+
+        $results = $session->results()->with('student')->get();
+
+        return response()->json($results);
     }
 }

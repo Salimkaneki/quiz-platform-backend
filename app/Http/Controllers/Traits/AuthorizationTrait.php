@@ -13,7 +13,7 @@ trait AuthorizationTrait
      */
     protected function getAuthenticatedTeacher(): Teacher
     {
-        $teacher = Auth::user()->teacher;
+        $teacher = Teacher::where('user_id', Auth::id())->first();
 
         if (!$teacher) {
             abort(response()->json([

@@ -26,10 +26,19 @@ class ResultFactory extends Factory
         
         $status = fake()->randomElement(['in_progress', 'submitted', 'graded', 'published']);
         
-        $startedAt = fake()->dateTimeBetween($quizSession->starts_at ?? '-1 hour', $quizSession->ends_at ?? 'now');
-        $submittedAt = $status !== 'in_progress' ? fake()->dateTimeBetween($startedAt, $quizSession->ends_at ?? 'now') : null;
-        $gradedAt = in_array($status, ['graded', 'published']) ? fake()->dateTimeBetween($submittedAt ?? $startedAt, '+1 day') : null;
-        $publishedAt = $status === 'published' ? fake()->dateTimeBetween($gradedAt ?? $submittedAt ?? $startedAt, '+1 day') : null;
+        if ($quizSession->status === 'completed') {
+            // For completed sessions, use past dates
+            $startedAt = fake()->dateTimeBetween($quizSession->starts_at ?? '-4 hours', $quizSession->ends_at ?? '-1 hour');
+            $submittedAt = $status !== 'in_progress' ? fake()->dateTimeBetween($startedAt, $quizSession->ends_at ?? '-1 hour') : null;
+            $gradedAt = in_array($status, ['graded', 'published']) ? fake()->dateTimeBetween($submittedAt ?? $startedAt, '+1 day') : null;
+            $publishedAt = $status === 'published' ? fake()->dateTimeBetween($gradedAt ?? $submittedAt ?? $startedAt, '+1 day') : null;
+        } else {
+            // For active/future sessions
+            $startedAt = fake()->dateTimeBetween($quizSession->starts_at ?? '-1 hour', $quizSession->ends_at ?? 'now');
+            $submittedAt = $status !== 'in_progress' ? fake()->dateTimeBetween($startedAt, $quizSession->ends_at ?? 'now') : null;
+            $gradedAt = in_array($status, ['graded', 'published']) ? fake()->dateTimeBetween($submittedAt ?? $startedAt, '+1 day') : null;
+            $publishedAt = $status === 'published' ? fake()->dateTimeBetween($gradedAt ?? $submittedAt ?? $startedAt, '+1 day') : null;
+        }
         
         return [
             'quiz_session_id' => $quizSession->id,
@@ -80,7 +89,7 @@ class ResultFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'status' => 'submitted',
-            'submitted_at' => fake()->dateTimeBetween($attributes['started_at'], 'now'),
+            'submitted_at' => fake()->dateTimeBetween($attributes['started_at'] ?? '-1 day', 'now'),
             'graded_at' => null,
             'published_at' => null,
         ]);
@@ -93,8 +102,8 @@ class ResultFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'status' => 'graded',
-            'submitted_at' => fake()->dateTimeBetween($attributes['started_at'], '-1 day'),
-            'graded_at' => fake()->dateTimeBetween($attributes['submitted_at'] ?? $attributes['started_at'], 'now'),
+            'submitted_at' => fake()->dateTimeBetween($attributes['started_at'] ?? '-2 days', '-1 day'),
+            'graded_at' => fake()->dateTimeBetween($attributes['submitted_at'] ?? $attributes['started_at'] ?? '-1 day', 'now'),
             'published_at' => null,
         ]);
     }
@@ -106,9 +115,9 @@ class ResultFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'status' => 'published',
-            'submitted_at' => fake()->dateTimeBetween($attributes['started_at'], '-2 days'),
-            'graded_at' => fake()->dateTimeBetween($attributes['submitted_at'] ?? $attributes['started_at'], '-1 day'),
-            'published_at' => fake()->dateTimeBetween($attributes['graded_at'] ?? $attributes['submitted_at'] ?? $attributes['started_at'], 'now'),
+            'submitted_at' => fake()->dateTimeBetween('-3 days', '-2 days'),
+            'graded_at' => fake()->dateTimeBetween('-2 days', '-1 day'),
+            'published_at' => fake()->dateTimeBetween('-1 day', 'now'),
         ]);
     }
 

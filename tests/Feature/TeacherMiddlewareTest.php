@@ -36,11 +36,11 @@ class TeacherMiddlewareTest extends TestCase
         ]);
 
         // Create a quiz session for testing
-        $quiz = \App\Models\Quiz::factory()->create(['teacher_id' => $teacher->id]);
+        $quiz = \App\Models\Quiz::factory()->create(['teacher_id' => $teacher->user_id]);
         $session = \App\Models\QuizSession::factory()->create(['quiz_id' => $quiz->id]);
 
         $response = $this->actingAs($user, 'sanctum')
-                        ->get("/api/teacher/quiz-sessions/{$session->id}/results");
+                        ->get("/api/teacher/sessions/{$session->id}/results");
 
         // Should not return 403 (forbidden)
         $response->assertStatus(200);
@@ -61,7 +61,7 @@ class TeacherMiddlewareTest extends TestCase
         $session = \App\Models\QuizSession::factory()->create(['quiz_id' => $quiz->id]);
 
         $response = $this->actingAs($student, 'sanctum')
-                        ->get("/api/teacher/quiz-sessions/{$session->id}/results");
+                        ->get("/api/teacher/sessions/{$session->id}/results");
 
         $response->assertStatus(403);
     }
@@ -75,7 +75,7 @@ class TeacherMiddlewareTest extends TestCase
         $quiz = \App\Models\Quiz::factory()->create();
         $session = \App\Models\QuizSession::factory()->create(['quiz_id' => $quiz->id]);
 
-        $response = $this->get("/api/teacher/quiz-sessions/{$session->id}/results");
+        $response = $this->get("/api/teacher/sessions/{$session->id}/results");
 
         $response->assertStatus(401);
     }
