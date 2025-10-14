@@ -21,6 +21,7 @@ use App\Http\Controllers\Admin\StudentImportController;
 use App\Http\Controllers\Admin\QuizController as AdminQuizController;
 use App\Http\Controllers\Admin\AdminQuizSessionController;
 use App\Http\Controllers\Admin\AdminResultController;
+use App\Http\Controllers\Admin\DashboardController;
 
 // Teacher Controllers
 use App\Http\Controllers\Auth\TeacherAuthController;
@@ -346,11 +347,11 @@ Route::middleware(['auth:sanctum', 'teacher'])->prefix('teacher')->group(functio
     Route::post('results/{id}/mark-graded', [ResultController::class, 'markAsGraded']);
     Route::post('results/{id}/publish', [ResultController::class, 'publish']);
     Route::get('quiz/{quizId}/results', [ResultController::class, 'allResultsForQuiz']); 
-    Route::get('/sessions', [ResultController::class, 'getCompletedSessions']);
+    Route::get('/teacher/sessions', [ResultController::class, 'getCompletedSessions']);
 
-
-// routes/api.php
-// Route::get('teacher/quiz-sessions/{quizSessionId}/results', [ResultController::class, 'allResultsForQuiz']);
+    // routes/api.php
+    // Route::get('teacher/quiz-sessions/{quizSessionId}/results', [ResultController::class, 'allResultsForQuiz']);
+});
 
 
 // =================== ROUTES FALLBACK ===================
@@ -361,10 +362,6 @@ Route::fallback(function(){
         'message' => 'Route not found.'
     ], 404);
 });
-use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\ReportController;
-use App\Http\Controllers\Admin\AdminTeacherNotificationController;
-use App\Http\Controllers\Admin\NotificationController;
 
 Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     // Dashboard
