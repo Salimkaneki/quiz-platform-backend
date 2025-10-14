@@ -79,6 +79,8 @@ class QuizSessionFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'status' => 'completed',
+            'starts_at' => fake()->dateTimeBetween('-4 hours', '-3 hours'),
+            'ends_at' => fake()->dateTimeBetween('-2 hours', '-1 hour'),
             'activated_at' => fake()->dateTimeBetween('-2 hours', '-1 hour'),
             'completed_at' => fake()->dateTimeBetween('-1 hour', 'now'),
         ]);

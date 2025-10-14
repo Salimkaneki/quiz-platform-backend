@@ -22,8 +22,8 @@ class QuizSessionController extends Controller
     {
         $teacher = $this->getAuthenticatedTeacher();
 
-        $query = QuizSession::where('teacher_id', $teacher->id)
-            ->with(['quiz.subject']);
+        // Temporaire : retourner toutes les sessions pour debug
+        $query = QuizSession::with(['quiz.subject']);
 
         // Filtres optionnels
         if (request()->has('status')) {
@@ -44,6 +44,10 @@ class QuizSessionController extends Controller
                 'last_page' => $sessions->lastPage(),
                 'per_page' => $sessions->perPage(),
                 'total' => $sessions->total(),
+            ],
+            'debug' => [
+                'teacher_user_id' => $teacher->user_id,
+                'auth_user_id' => auth()->id(),
             ]
         ]);
     }
@@ -62,7 +66,7 @@ class QuizSessionController extends Controller
         $this->checkScheduleConflicts($teacher, $validated['starts_at'], $validated['ends_at']);
 
         // Vérifier les doublons
-        $exists = QuizSession::where('teacher_id', $teacher->id)
+        $exists = QuizSession::where('teacher_id', $teacher->user_id)
             ->where('title', $validated['title'])
             ->where('starts_at', $validated['starts_at'])
             ->where('ends_at', $validated['ends_at'])
@@ -75,7 +79,7 @@ class QuizSessionController extends Controller
         }
 
         $session = new QuizSession($validated);
-        $session->teacher_id = $teacher->id;
+        $session->teacher_id = $teacher->user_id;
         $session->status = 'scheduled';
         $session->generateSessionCode();
         $session->save();
@@ -150,7 +154,7 @@ class QuizSessionController extends Controller
         $this->checkScheduleConflicts($teacher, $validated['starts_at'], $validated['ends_at'], $session->id);
 
         // Vérifier les doublons sauf la session courante
-        $exists = QuizSession::where('teacher_id', $teacher->id)
+        $exists = QuizSession::where('teacher_id', $teacher->user_id)
             ->where('title', $validated['title'])
             ->where('starts_at', $validated['starts_at'])
             ->where('ends_at', $validated['ends_at'])
