@@ -22,6 +22,12 @@ class QuizSessionController extends Controller
     {
         $teacher = $this->getAuthenticatedTeacher();
 
+        \Log::info('QuizSessionController@index - Teacher info', [
+            'teacher_id' => $teacher->id,
+            'user_id' => $teacher->user_id,
+            'teacher_model' => $teacher
+        ]);
+
         $query = QuizSession::where('teacher_id', $teacher->id)
             ->with(['quiz.subject']);
 
@@ -36,6 +42,12 @@ class QuizSessionController extends Controller
 
         $sessions = $query->latest()
             ->paginate(request()->get('per_page', 15));
+
+        \Log::info('QuizSessionController@index - Query results', [
+            'total_sessions' => $sessions->total(),
+            'sessions_count' => $sessions->count(),
+            'sessions_data' => $sessions->items()
+        ]);
 
         return response()->json([
             'sessions' => $sessions->items(),
@@ -52,6 +64,12 @@ class QuizSessionController extends Controller
     {
         $teacher = $this->getAuthenticatedTeacher();
         $validated = $request->validated();
+
+        \Log::info('QuizSessionController@store - Creating session', [
+            'teacher_id' => $teacher->id,
+            'user_id' => $teacher->user_id,
+            'validated_data' => $validated
+        ]);
 
         // Validation des étudiants si fournis
         if (!empty($validated['allowed_students'])) {
@@ -79,6 +97,12 @@ class QuizSessionController extends Controller
         $session->status = 'scheduled';
         $session->generateSessionCode();
         $session->save();
+
+        \Log::info('QuizSessionController@store - Session created', [
+            'session_id' => $session->id,
+            'session_teacher_id' => $session->teacher_id,
+            'session_code' => $session->session_code
+        ]);
 
         // Notifier les étudiants
         $notificationService = app(PlatformNotificationService::class);

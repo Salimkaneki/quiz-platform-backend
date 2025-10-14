@@ -29,6 +29,23 @@ use App\Http\Controllers\Quiz\QuizSessionController;
 use App\Http\Controllers\Quiz\QuizController;
 use App\Http\Controllers\Quiz\QuestionController;
 use App\Http\Controllers\Teacher\TeacherDashboardController;
+use App\Http\Controllers\Teacher\TeacherNotificationController;
+
+// Student Controllers
+use App\Http\Controllers\Auth\StudentAuthController;
+use App\Http\Controllers\Student\StudentSessionController;
+use App\Http\Controllers\Student\StudentNotificationController;
+use App\Http\Controllers\Student\StudentProfileController;
+use App\Http\Controllers\Student\StudentDashboardController;
+use App\Http\Controllers\Student\StudentResponseController;
+
+// Quiz Controllers
+use App\Http\Controllers\Quiz\ResultController;
+
+// Report Controllers
+use App\Http\Controllers\Admin\ReportController;
+use App\Http\Controllers\Admin\NotificationController;
+use App\Http\Controllers\Admin\AdminTeacherNotificationController;
 
 // =================== ROUTES PUBLIQUES ===================
 
@@ -268,8 +285,6 @@ Route::prefix('teacher')->name('teacher.')->middleware(['auth:sanctum', 'teacher
     });
 });
 
-use App\Http\Controllers\Auth\StudentAuthController;
-
 Route::prefix('student/auth')->group(function () {
     Route::post('login', [StudentAuthController::class, 'login']);
     
@@ -280,7 +295,14 @@ Route::prefix('student/auth')->group(function () {
     });
 });
 
-use App\Http\Controllers\Student\StudentSessionController;
+Route::prefix('student/auth')->group(function () {
+    Route::post('login', [StudentAuthController::class, 'login']);
+    
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('logout', [StudentAuthController::class, 'logout']);
+        Route::get('me', [StudentAuthController::class, 'me']);
+    });
+});
 
 // Route protégée par Sanctum (auth:sanctum)
 Route::middleware('auth:sanctum')->group(function () {
@@ -296,9 +318,6 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 
-use App\Http\Controllers\Student\StudentNotificationController;
-
-// Groupe de routes pour étudiants avec middleware auth
 Route::middleware(['auth:sanctum', 'student'])->prefix('student')->group(function () {
 
     // ===== PROFIL ÉTUDIANT =====
@@ -335,9 +354,6 @@ Route::middleware(['auth:sanctum', 'student'])->prefix('student')->group(functio
     Route::get('/results/{resultId}/responses/{questionId}', [\App\Http\Controllers\Student\StudentResponseController::class, 'show'])
          ->name('student.responses.show');
 });
-
-use App\Http\Controllers\Quiz\ResultController;
-
 
 Route::prefix('teacher')->middleware(['auth:sanctum'])->group(function () {
     Route::get('/sessions', [ResultController::class, 'getCompletedSessions']);
