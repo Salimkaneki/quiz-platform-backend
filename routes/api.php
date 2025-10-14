@@ -244,6 +244,9 @@ Route::prefix('teacher')->name('teacher.')->middleware(['auth:sanctum', 'teacher
         Route::patch('/{id}/complete', [QuizSessionController::class, 'complete'])->name('complete');
         Route::patch('/{id}/cancel', [QuizSessionController::class, 'cancel'])->name('cancel');
 
+        // Voir tous les résultats d'une session (même non publiés)
+        Route::get('/{id}/results', [QuizSessionController::class, 'sessionResults'])->name('results');
+
         // Gestion des doublons
         Route::get('duplicates', [QuizSessionController::class, 'detectDuplicates'])->name('duplicates.detect');
         Route::post('clean-duplicates', [QuizSessionController::class, 'cleanDuplicates'])->name('duplicates.clean');

@@ -120,6 +120,9 @@ class QuizSessionController extends Controller
 
         $this->authorizeTeacherResource($session, 'session');
 
+        // Ajouter les statistiques des résultats
+        $session->results_statistics = $this->getSessionResultsStatistics($session);
+
         return response()->json($session);
     }
 
@@ -176,7 +179,51 @@ class QuizSessionController extends Controller
 
     public function complete($id)
     {
-        return $this->changeStatus($id, 'active', 'completed', 'terminée', 'completed_at');
+        try {
+            $teacher = $this->getAuthenticatedTeacher();
+            $session = QuizSession::findOrFail($id);
+
+            $this->authorizeTeacherResource($session, 'session');
+
+            if ($session->status !== 'active') {
+                return response()->json([
+                    'error' => "Impossible de terminer une session ayant le statut '{$session->status}'. La session doit être active."
+                ], 400);
+            }
+
+            // Terminer la session
+            $session->update([
+                'status' => 'completed',
+                'completed_at' => now()
+            ]);
+
+            // Publier automatiquement tous les résultats soumis de cette session
+            $submittedResults = $session->results()->where('status', 'submitted')->get();
+            foreach ($submittedResults as $result) {
+                $result->markAsPublished();
+            }
+
+            // Recharger la session avec les relations
+            $session = $session->fresh()->load(['quiz.subject', 'results.student']);
+
+            return response()->json([
+                'message' => 'Session terminée avec succès. Tous les résultats soumis ont été publiés.',
+                'session' => $session,
+                'published_results_count' => $submittedResults->count(),
+                'results_url' => route('teacher.sessions.results', ['id' => $session->id]),
+                'statistics' => $this->getSessionResultsStatistics($session),
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error("Erreur lors de la terminaison de session", [
+                'session_id' => $id,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'error' => 'Une erreur est survenue lors de la terminaison de la session'
+            ], 500);
+        }
     }
 
     public function cancel($id)
@@ -228,43 +275,60 @@ class QuizSessionController extends Controller
         }
     }
 
-    public function destroy($id)
+    /**
+     * Calculer les statistiques des résultats d'une session
+     */
+    private function getSessionResultsStatistics(QuizSession $session)
     {
-        try {
-            $teacher = $this->getAuthenticatedTeacher();
-            $session = QuizSession::find($id);
+        $allResults = $session->results;
+        $totalParticipants = $allResults->count();
 
-            if (!$session) {
-                return response()->json([
-                    'error' => 'Session non trouvée'
-                ], 404);
-            }
-
-            $this->authorizeTeacherResource($session, 'session');
-
-            // Empêcher la suppression de sessions actives
-            if ($session->status === 'active') {
-                return response()->json([
-                    'error' => 'Impossible de supprimer une session active. Veuillez d\'abord la terminer ou l\'annuler.'
-                ], 400);
-            }
-
-            $session->delete();
-
-            return response()->json([
-                'message' => 'Session supprimée avec succès'
-            ], 200);
-
-        } catch (\Exception $e) {
-            Log::error('Erreur lors de la suppression de session', [
-                'session_id' => $id,
-                'teacher_id' => $teacher->id ?? null,
-                'error' => $e->getMessage()
-            ]);
-
-            return response()->json([
-                'error' => 'Une erreur est survenue lors de la suppression'
-            ], 500);
+        if ($totalParticipants === 0) {
+            return [
+                'total_participants' => 0,
+                'submitted_results' => 0,
+                'graded_results' => 0,
+                'published_results' => 0,
+                'average_score' => 0,
+                'highest_score' => 0,
+                'lowest_score' => 0,
+                'completion_rate' => 0,
+                'score_distribution' => [
+                    'excellent' => 0, // 90-100%
+                    'good' => 0,      // 80-89%
+                    'average' => 0,   // 60-79%
+                    'poor' => 0,      // < 60%
+                ],
+            ];
         }
+
+        $submittedResults = $allResults->where('status', 'submitted');
+        $gradedResults = $allResults->where('status', 'graded');
+        $publishedResults = $allResults->where('status', 'published');
+
+        $publishedScores = $publishedResults->pluck('percentage');
+        $averageScore = $publishedScores->avg() ?? 0;
+        $highestScore = $publishedScores->max() ?? 0;
+        $lowestScore = $publishedScores->min() ?? 0;
+
+        // Répartition des scores
+        $scoreDistribution = [
+            'excellent' => $publishedScores->filter(fn($score) => $score >= 90)->count(),
+            'good' => $publishedScores->filter(fn($score) => $score >= 80 && $score < 90)->count(),
+            'average' => $publishedScores->filter(fn($score) => $score >= 60 && $score < 80)->count(),
+            'poor' => $publishedScores->filter(fn($score) => $score < 60)->count(),
+        ];
+
+        return [
+            'total_participants' => $totalParticipants,
+            'submitted_results' => $submittedResults->count(),
+            'graded_results' => $gradedResults->count(),
+            'published_results' => $publishedResults->count(),
+            'average_score' => round($averageScore, 2),
+            'highest_score' => round($highestScore, 2),
+            'lowest_score' => round($lowestScore, 2),
+            'completion_rate' => round(($submittedResults->count() / $totalParticipants) * 100, 2),
+            'score_distribution' => $scoreDistribution,
+        ];
     }
 }
