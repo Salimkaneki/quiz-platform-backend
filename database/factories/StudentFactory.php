@@ -36,8 +36,10 @@ class StudentFactory extends Factory
                 'notifications' => fake()->boolean(),
             ],
             'profile_picture' => null,
-            'class_id' => null, // Temporairement null pour éviter le problème
-            'institution_id' => null, // Temporairement null
+            'class_id' => \App\Models\Classes::factory(),
+            'institution_id' => function (array $attributes) {
+                return \App\Models\Classes::find($attributes['class_id'])->institution_id;
+            },
             'is_active' => true,
             'metadata' => [
                 'enrollment_date' => fake()->dateTimeBetween('-2 years', 'now'),

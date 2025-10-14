@@ -20,13 +20,14 @@ use App\Http\Controllers\Management\TeacherSubjectController;
 use App\Http\Controllers\Admin\StudentImportController;
 use App\Http\Controllers\Admin\QuizController as AdminQuizController;
 use App\Http\Controllers\Admin\AdminQuizSessionController;
+use App\Http\Controllers\Admin\AdminResultController;
 
 // Teacher Controllers
 use App\Http\Controllers\Auth\TeacherAuthController;
 use App\Http\Controllers\Quiz\QuizSessionController;
 use App\Http\Controllers\Quiz\QuizController;
 use App\Http\Controllers\Quiz\QuestionController;
-use App\Http\Controllers\Teacher\TeacherNotificationController;
+use App\Http\Controllers\Teacher\TeacherDashboardController;
 
 // =================== ROUTES PUBLIQUES ===================
 
@@ -206,6 +207,9 @@ Route::prefix('teacher')->name('teacher.')->group(function () {
 
 // ===== TEACHER RESOURCES (Toutes protégées) =====
 Route::prefix('teacher')->name('teacher.')->middleware(['auth:sanctum', 'teacher'])->group(function () {
+    
+    // ===== DASHBOARD =====
+    Route::get('dashboard', [TeacherDashboardController::class, 'index'])->name('dashboard');
     
     // ===== QUIZZES =====
     Route::apiResource('quizzes', QuizController::class)->names([
@@ -392,4 +396,9 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
         Route::post('/send-to-teacher/{teacherId}', [AdminTeacherNotificationController::class, 'sendToSpecificTeacher'])->name('send_to_teacher');
         Route::post('/send-to-multiple', [AdminTeacherNotificationController::class, 'sendToMultipleTeachers'])->name('send_to_multiple');
     });
+
+    // Results
+    Route::get('quiz-sessions/{quizSessionId}/results', [AdminResultController::class, 'index']);
+    Route::get('results/{id}', [AdminResultController::class, 'show']);
+    Route::get('quiz/{quizId}/results', [AdminResultController::class, 'allResultsForQuiz']);
 });

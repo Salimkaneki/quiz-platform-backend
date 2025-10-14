@@ -23,6 +23,9 @@ class ResultController extends Controller
     {
         $results = Result::with('student')
             ->where('quiz_session_id', $quizSessionId)
+            ->whereHas('quizSession', function($query) {
+                $query->where('teacher_id', auth()->id());
+            })
             ->get();
 
         return response()->json($results);
@@ -36,7 +39,11 @@ class ResultController extends Controller
      */
     public function show($id)
     {
-        $result = Result::with('student')->findOrFail($id);
+        $result = Result::with('student')
+            ->whereHas('quizSession', function($query) {
+                $query->where('teacher_id', auth()->id());
+            })
+            ->findOrFail($id);
 
         $studentResponses = StudentResponse::where('student_id', $result->student_id)
                             ->where('quiz_session_id', $result->quiz_session_id)
@@ -58,6 +65,9 @@ class ResultController extends Controller
     {
         $results = Result::with('student')
                         ->where('quiz_session_id', $quizSessionId)
+                        ->whereHas('quizSession', function($query) {
+                            $query->where('teacher_id', auth()->id());
+                        })
                         ->get();
 
         // Attacher manuellement les réponses pour chaque résultat
@@ -81,7 +91,10 @@ class ResultController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $result = Result::findOrFail($id);
+        $result = Result::whereHas('quizSession', function($query) {
+                $query->where('teacher_id', auth()->id());
+            })
+            ->findOrFail($id);
 
         $result->update([
             'total_points'     => $request->input('total_points', $result->total_points),
@@ -110,7 +123,10 @@ class ResultController extends Controller
         $response = StudentResponse::where('quiz_session_id', function ($query) use ($resultId) {
                 $query->select('quiz_session_id')
                       ->from('results')
-                      ->where('id', $resultId);
+                      ->where('id', $resultId)
+                      ->whereHas('quizSession', function($subQuery) {
+                          $subQuery->where('teacher_id', auth()->id());
+                      });
             })
             ->where('id', $responseId)
             ->firstOrFail();
@@ -135,7 +151,10 @@ class ResultController extends Controller
      */
     public function markAsGraded($id)
     {
-        $result = Result::findOrFail($id);
+        $result = Result::whereHas('quizSession', function($query) {
+                $query->where('teacher_id', auth()->id());
+            })
+            ->findOrFail($id);
         $result->markAsGraded();
 
         return response()->json([
@@ -152,7 +171,10 @@ class ResultController extends Controller
      */
     public function publish($id)
     {
-        $result = Result::findOrFail($id);
+        $result = Result::whereHas('quizSession', function($query) {
+                $query->where('teacher_id', auth()->id());
+            })
+            ->findOrFail($id);
         $result->markAsPublished();
 
         return response()->json([
