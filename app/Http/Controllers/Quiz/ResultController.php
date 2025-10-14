@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Quiz;
 use App\Http\Controllers\Controller;
 use App\Models\Result;
 use App\Models\StudentResponse;
+use App\Models\QuizSession; // Import ajouté
 use Illuminate\Http\Request;
 
 /**
@@ -31,13 +32,17 @@ class ResultController extends Controller
         return response()->json($results);
     }
 
-/**
- * Liste des sessions terminées pour l'enseignant connecté
- */
-    public function getCompletedSessions()
+    /**
+     * Liste des sessions terminées pour l'enseignant connecté
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getCompletedSessions(Request $request)
     {
+        $status = $request->query('status', 'finished'); // Paramètre dynamique
+        
         $sessions = QuizSession::where('teacher_id', auth()->id())
-            ->where('status', 'finished') // ou 'completed'
+            ->where('status', $status)
             ->with('quiz')
             ->get();
 
@@ -133,14 +138,14 @@ class ResultController extends Controller
      */
     public function updateResponse(Request $request, $resultId, $responseId)
     {
-        $response = StudentResponse::where('quiz_session_id', function ($query) use ($resultId) {
-                $query->select('quiz_session_id')
-                      ->from('results')
-                      ->where('id', $resultId)
-                      ->whereHas('quizSession', function($subQuery) {
-                          $subQuery->where('teacher_id', auth()->id());
-                      });
-            })
+        // D'abord vérifier que l'enseignant possède le résultat
+        $result = Result::whereHas('quizSession', function($query) {
+            $query->where('teacher_id', auth()->id());
+        })->findOrFail($resultId);
+
+        // Récupérer la réponse spécifique
+        $response = StudentResponse::where('student_id', $result->student_id)
+            ->where('quiz_session_id', $result->quiz_session_id)
             ->where('id', $responseId)
             ->firstOrFail();
 

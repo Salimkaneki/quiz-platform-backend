@@ -338,19 +338,15 @@ Route::middleware(['auth:sanctum', 'student'])->prefix('student')->group(functio
 
 use App\Http\Controllers\Quiz\ResultController;
 
-Route::middleware(['auth:sanctum', 'teacher'])->prefix('teacher')->group(function () {
-    
-    Route::get('quiz-sessions/{quizSessionId}/results', [ResultController::class, 'index']);
-    Route::get('results/{id}', [ResultController::class, 'show']);
-    Route::put('results/{id}', [ResultController::class, 'update']);
-    Route::put('results/{resultId}/responses/{responseId}', [ResultController::class, 'updateResponse']);
-    Route::post('results/{id}/mark-graded', [ResultController::class, 'markAsGraded']);
-    Route::post('results/{id}/publish', [ResultController::class, 'publish']);
-    Route::get('quiz/{quizId}/results', [ResultController::class, 'allResultsForQuiz']); 
-    Route::get('/teacher/sessions', [ResultController::class, 'getCompletedSessions']);
 
-    // routes/api.php
-    // Route::get('teacher/quiz-sessions/{quizSessionId}/results', [ResultController::class, 'allResultsForQuiz']);
+Route::prefix('teacher')->middleware(['auth:sanctum'])->group(function () {
+    Route::get('/sessions', [ResultController::class, 'getCompletedSessions']);
+    Route::get('/quiz/{quizSessionId}/results', [ResultController::class, 'index']);
+    Route::get('/results/{id}', [ResultController::class, 'show']);
+    Route::put('/results/{id}', [ResultController::class, 'update']);
+    Route::put('/results/{resultId}/responses/{responseId}', [ResultController::class, 'updateResponse']);
+    Route::post('/results/{id}/mark-graded', [ResultController::class, 'markAsGraded']);
+    Route::post('/results/{id}/publish', [ResultController::class, 'publish']);
 });
 
 
