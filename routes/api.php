@@ -27,7 +27,7 @@ use App\Http\Controllers\Auth\TeacherAuthController;
 use App\Http\Controllers\Quiz\QuizSessionController;
 use App\Http\Controllers\Quiz\QuizController;
 use App\Http\Controllers\Quiz\QuestionController;
-use App\Http\Controllers\Teacher\TeacherNotificationController;
+use App\Http\Controllers\Teacher\TeacherDashboardController;
 
 // =================== ROUTES PUBLIQUES ===================
 
@@ -207,6 +207,9 @@ Route::prefix('teacher')->name('teacher.')->group(function () {
 
 // ===== TEACHER RESOURCES (Toutes protégées) =====
 Route::prefix('teacher')->name('teacher.')->middleware(['auth:sanctum', 'teacher'])->group(function () {
+    
+    // ===== DASHBOARD =====
+    Route::get('dashboard', [TeacherDashboardController::class, 'index'])->name('dashboard');
     
     // ===== QUIZZES =====
     Route::apiResource('quizzes', QuizController::class)->names([
