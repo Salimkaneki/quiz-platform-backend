@@ -31,6 +31,19 @@ class ResultController extends Controller
         return response()->json($results);
     }
 
+/**
+ * Liste des sessions terminées pour l'enseignant connecté
+ */
+    public function getCompletedSessions()
+    {
+        $sessions = QuizSession::where('teacher_id', auth()->id())
+            ->where('status', 'finished') // ou 'completed'
+            ->with('quiz')
+            ->get();
+
+        return response()->json(['sessions' => $sessions]);
+    }
+
     /**
      * Détails du résultat d'un étudiant, avec ses réponses.
      *

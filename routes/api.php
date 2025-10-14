@@ -346,7 +346,7 @@ Route::middleware(['auth:sanctum', 'teacher'])->prefix('teacher')->group(functio
     Route::post('results/{id}/mark-graded', [ResultController::class, 'markAsGraded']);
     Route::post('results/{id}/publish', [ResultController::class, 'publish']);
     Route::get('quiz/{quizId}/results', [ResultController::class, 'allResultsForQuiz']); 
-});
+    Route::get('/sessions', [ResultController::class, 'getCompletedSessions']);
 
 
 // routes/api.php
