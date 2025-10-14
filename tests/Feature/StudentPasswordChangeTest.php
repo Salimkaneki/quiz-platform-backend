@@ -98,9 +98,14 @@ class StudentPasswordChangeTest extends TestCase
                             'password_confirmation' => 'NewPassword123'
                         ]);
 
-        $response->assertStatus(400)
+        $response->assertStatus(422)
                 ->assertJson([
-                    'error' => 'Le mot de passe actuel est incorrect'
+                    'message' => 'Le mot de passe actuel est incorrect',
+                    'errors' => [
+                        'current_password' => [
+                            'Le mot de passe actuel est incorrect'
+                        ]
+                    ]
                 ]);
     }
 
@@ -125,9 +130,14 @@ class StudentPasswordChangeTest extends TestCase
                             'password_confirmation' => 'TempPassword123'
                         ]);
 
-        $response->assertStatus(400)
+        $response->assertStatus(422)
                 ->assertJson([
-                    'error' => 'Le nouveau mot de passe doit être différent de l\'actuel'
+                    'message' => 'Le nouveau mot de passe doit être différent de l\'actuel',
+                    'errors' => [
+                        'password' => [
+                            'Le nouveau mot de passe doit être différent de l\'actuel'
+                        ]
+                    ]
                 ]);
     }
 

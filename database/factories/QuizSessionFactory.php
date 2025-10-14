@@ -18,7 +18,7 @@ class QuizSessionFactory extends Factory
     {
         $quiz = \App\Models\Quiz::factory()->create();
         $startsAt = fake()->dateTimeBetween('now', '+1 week');
-        $endsAt = fake()->dateTimeBetween($startsAt, $startsAt->format('Y-m-d H:i:s') . ' +4 hours');
+        $endsAt = fake()->dateTimeBetween($startsAt, (clone $startsAt)->modify('+4 hours'));
         
         return [
             'quiz_id' => $quiz->id,
@@ -79,6 +79,8 @@ class QuizSessionFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'status' => 'completed',
+            'starts_at' => fake()->dateTimeBetween('-4 hours', '-3 hours'),
+            'ends_at' => fake()->dateTimeBetween('-2 hours', '-1 hour'),
             'activated_at' => fake()->dateTimeBetween('-2 hours', '-1 hour'),
             'completed_at' => fake()->dateTimeBetween('-1 hour', 'now'),
         ]);
@@ -124,7 +126,7 @@ class QuizSessionFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'starts_at' => $dateTime,
-            'ends_at' => fake()->dateTimeBetween($dateTime, $dateTime->format('Y-m-d H:i:s') . ' +4 hours'),
+            'ends_at' => fake()->dateTimeBetween($dateTime, (clone $dateTime)->modify('+4 hours')),
         ]);
     }
 }

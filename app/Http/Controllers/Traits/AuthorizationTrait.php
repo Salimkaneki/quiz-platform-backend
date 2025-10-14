@@ -13,7 +13,7 @@ trait AuthorizationTrait
      */
     protected function getAuthenticatedTeacher(): Teacher
     {
-        $teacher = Auth::user()->teacher;
+        $teacher = Teacher::where('user_id', Auth::id())->first();
 
         if (!$teacher) {
             abort(response()->json([
@@ -32,7 +32,7 @@ trait AuthorizationTrait
     {
         $teacher = $this->getAuthenticatedTeacher();
 
-        if ($resource->teacher_id !== $teacher->id) {
+        if ($resource->teacher_id !== $teacher->user_id) {
             abort(response()->json([
                 'error' => 'Accès non autorisé',
                 'message' => "Vous n'êtes pas autorisé à accéder à cette {$resourceName}"
@@ -70,7 +70,7 @@ trait AuthorizationTrait
      */
     protected function checkScheduleConflicts(Teacher $teacher, $startsAt, $endsAt, $excludeSessionId = null): void
     {
-        $query = \App\Models\QuizSession::where('teacher_id', $teacher->id)
+        $query = \App\Models\QuizSession::where('teacher_id', $teacher->user_id)
             ->where(function ($q) use ($startsAt, $endsAt) {
                 $q->whereBetween('starts_at', [$startsAt, $endsAt])
                   ->orWhereBetween('ends_at', [$startsAt, $endsAt])

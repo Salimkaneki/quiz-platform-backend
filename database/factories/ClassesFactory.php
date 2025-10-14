@@ -23,7 +23,6 @@ class ClassesFactory extends Factory
             'level' => fake()->numberBetween(1, 5),
             'academic_year' => '2024-2025',
             'formation_id' => $formation->id,
-            'institution_id' => $formation->institution_id,
             'max_students' => fake()->numberBetween(20, 40),
             'is_active' => true,
         ];

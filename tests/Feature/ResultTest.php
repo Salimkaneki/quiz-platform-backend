@@ -42,7 +42,7 @@ class ResultTest extends TestCase
         Sanctum::actingAs($teacherUser);
 
         // Tester la récupération des résultats
-        $response = $this->getJson("/api/teacher/quiz-sessions/{$quizSession->id}/results");
+        $response = $this->getJson("/api/teacher/sessions/{$quizSession->id}/results");
 
         $response->assertStatus(200)
                 ->assertJsonStructure([
@@ -88,10 +88,9 @@ class ResultTest extends TestCase
         Sanctum::actingAs($teacherUser1);
 
         // Tester que l'accès est refusé
-        $response = $this->getJson("/api/teacher/quiz-sessions/{$quizSession->id}/results");
+        $response = $this->getJson("/api/teacher/sessions/{$quizSession->id}/results");
 
-        $response->assertStatus(200)
-                ->assertJsonCount(0); // Aucun résultat retourné
+        $response->assertStatus(403);
     }
 
     /** @test */
@@ -125,7 +124,7 @@ class ResultTest extends TestCase
         Sanctum::actingAs($adminUser);
 
         // Tester la récupération
-        $response = $this->getJson("/api/admin/results/session/{$quizSession->id}");
+        $response = $this->getJson("/api/admin/quiz-sessions/{$quizSession->id}/results");
 
         $response->assertStatus(200)
                 ->assertJsonCount(1)
@@ -176,7 +175,7 @@ class ResultTest extends TestCase
         Sanctum::actingAs($adminUser);
 
         // Tester que rien n'est retourné
-        $response = $this->getJson("/api/admin/results/session/{$quizSession->id}");
+        $response = $this->getJson("/api/admin/quiz-sessions/{$quizSession->id}/results");
 
         $response->assertStatus(200)
                 ->assertJsonCount(0);
