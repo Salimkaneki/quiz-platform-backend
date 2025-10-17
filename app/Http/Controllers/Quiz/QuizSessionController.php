@@ -356,6 +356,9 @@ class QuizSessionController extends Controller
         ];
     }
 
+// Ajoutez cette méthode après la méthode cancel()
+
+
     public function sessionResults($id)
     {
         $teacher = $this->getAuthenticatedTeacher();
@@ -366,5 +369,52 @@ class QuizSessionController extends Controller
         $results = $session->results()->with('student')->get();
 
         return response()->json($results);
+    }
+
+    public function destroy($id)
+    {
+        try {
+            $teacher = $this->getAuthenticatedTeacher();
+            $session = QuizSession::findOrFail($id);
+
+            $this->authorizeTeacherResource($session, 'session');
+
+            // Vérifier si la session peut être supprimée
+            if (in_array($session->status, ['active', 'completed'])) {
+                return response()->json([
+                    'error' => 'Impossible de supprimer une session active ou terminée. Veuillez d\'abord l\'annuler.'
+                ], 400);
+            }
+
+            // Vérifier s'il y a des résultats associés
+            $resultsCount = $session->results()->count();
+            if ($resultsCount > 0) {
+                return response()->json([
+                    'error' => 'Impossible de supprimer une session qui contient des résultats d\'étudiants.'
+                ], 400);
+            }
+
+            \Log::info('QuizSessionController@destroy - Deleting session', [
+                'session_id' => $session->id,
+                'teacher_id' => $teacher->id,
+                'session_status' => $session->status
+            ]);
+
+            $session->delete();
+
+            return response()->json([
+                'message' => 'Session supprimée avec succès'
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('QuizSessionController@destroy - Error', [
+                'session_id' => $id,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'error' => 'Une erreur est survenue lors de la suppression de la session'
+            ], 500);
+        }
     }
 }
