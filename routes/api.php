@@ -106,7 +106,7 @@ Route::prefix('teachers')->name('teachers.')->group(function () {
 // ===== ADMIN AUTH =====
 Route::prefix('admin')->name('admin.')->group(function () {
     // Routes d'authentification (sans middleware)
-    Route::post('login', [AdminAuthController::class, 'login'])->name('login');
+    Route::post('login', [AdminAuthController::class, 'login'])->middleware('throttle:login')->name('login');
 
     // Routes protégées
     Route::middleware('auth:sanctum')->group(function () {
@@ -213,7 +213,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth:sanctum', 'admin'])->g
 // ===== TEACHER AUTH =====
 Route::prefix('teacher')->name('teacher.')->group(function () {
     // Routes d'authentification (sans middleware)
-    Route::post('login', [TeacherAuthController::class, 'login'])->name('login');
+    Route::post('login', [TeacherAuthController::class, 'login'])->middleware('throttle:login')->name('login');
     
     // Routes protégées
     Route::middleware('auth:sanctum')->group(function () {
@@ -286,7 +286,7 @@ Route::prefix('teacher')->name('teacher.')->middleware(['auth:sanctum', 'teacher
 });
 
 Route::prefix('student/auth')->group(function () {
-    Route::post('login', [StudentAuthController::class, 'login']);
+    Route::post('login', [StudentAuthController::class, 'login'])->middleware('throttle:login');
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('logout', [StudentAuthController::class, 'logout']);
