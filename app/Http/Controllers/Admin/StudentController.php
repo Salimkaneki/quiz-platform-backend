@@ -115,7 +115,7 @@ class StudentController extends Controller
             Log::info('StudentController@store - Début de la transaction');
             
             // Création du User avec mot de passe par défaut
-            $defaultPassword = 'Motdepasse123';
+            $defaultPassword = config('students.default_password');
             $userData = [
                 'name' => $data['first_name'] . ' ' . $data['last_name'],
                 'email' => $data['email'],

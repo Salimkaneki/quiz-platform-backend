@@ -156,7 +156,7 @@ class StudentImportController extends Controller
                 }
 
                 try {
-                    $defaultPassword = 'Motdepasse123';
+                    $defaultPassword = config('students.default_password');
                     
                     // Transaction pour assurer la cohérence
                     DB::beginTransaction();

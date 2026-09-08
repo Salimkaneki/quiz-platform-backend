@@ -127,13 +127,15 @@ class ResultController extends Controller
             })
             ->findOrFail($id);
 
-        $result->update([
-            'total_points'     => $request->input('total_points', $result->total_points),
-            'max_points'       => $request->input('max_points', $result->max_points),
-            'percentage'       => $request->input('percentage', $result->percentage),
-            'grade'            => $request->input('grade', $result->grade),
-            'teacher_feedback' => $request->input('teacher_feedback', $result->teacher_feedback),
+        $validated = $request->validate([
+            'total_points'     => ['sometimes', 'numeric', 'min:0'],
+            'max_points'       => ['sometimes', 'numeric', 'min:0'],
+            'percentage'       => ['sometimes', 'numeric', 'between:0,100'],
+            'grade'            => ['sometimes', 'nullable', 'string', 'max:10'],
+            'teacher_feedback' => ['sometimes', 'nullable', 'string', 'max:5000'],
         ]);
+
+        $result->update($validated);
 
         return response()->json([
             'message' => 'Résultat mis à jour avec succès',
