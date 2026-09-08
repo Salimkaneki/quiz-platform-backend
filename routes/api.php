@@ -287,17 +287,7 @@ Route::prefix('teacher')->name('teacher.')->middleware(['auth:sanctum', 'teacher
 
 Route::prefix('student/auth')->group(function () {
     Route::post('login', [StudentAuthController::class, 'login']);
-    
-    Route::middleware('auth:sanctum')->group(function () {
-        Route::post('logout', [StudentAuthController::class, 'logout']);
-        Route::get('me', [StudentAuthController::class, 'me']);
-        Route::get('me', [StudentAuthController::class, 'me']);
-    });
-});
 
-Route::prefix('student/auth')->group(function () {
-    Route::post('login', [StudentAuthController::class, 'login']);
-    
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('logout', [StudentAuthController::class, 'logout']);
         Route::get('me', [StudentAuthController::class, 'me']);
