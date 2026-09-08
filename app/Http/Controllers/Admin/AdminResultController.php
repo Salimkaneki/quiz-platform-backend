@@ -89,13 +89,18 @@ class AdminResultController extends Controller
                         })
                         ->get();
 
-        // Attacher manuellement les réponses pour chaque résultat
+        // Une seule requête pour toutes les réponses, puis regroupement en mémoire
+        // (auparavant : une requête SQL par résultat).
+        $responses = StudentResponse::with('question')
+            ->whereIn('student_id', $results->pluck('student_id'))
+            ->whereIn('quiz_session_id', $results->pluck('quiz_session_id'))
+            ->get()
+            ->groupBy(fn ($r) => $r->student_id . '-' . $r->quiz_session_id);
+
         foreach ($results as $result) {
-            $studentResponses = StudentResponse::where('student_id', $result->student_id)
-                                ->where('quiz_session_id', $result->quiz_session_id)
-                                ->with('question')
-                                ->get();
-            $result->student_responses = $studentResponses;
+            $result->student_responses = $responses
+                ->get($result->student_id . '-' . $result->quiz_session_id, collect())
+                ->values();
         }
 
         return response()->json($results);
