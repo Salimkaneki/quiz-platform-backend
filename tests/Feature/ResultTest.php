@@ -124,7 +124,7 @@ class ResultTest extends TestCase
         Sanctum::actingAs($adminUser);
 
         // Tester la récupération
-        $response = $this->getJson("/api/admin/quiz-sessions/{$quizSession->id}/results");
+        $response = $this->getJson("/api/admin/results/session/{$quizSession->id}");
 
         $response->assertStatus(200)
                 ->assertJsonCount(1)
@@ -175,7 +175,7 @@ class ResultTest extends TestCase
         Sanctum::actingAs($adminUser);
 
         // Tester que rien n'est retourné
-        $response = $this->getJson("/api/admin/quiz-sessions/{$quizSession->id}/results");
+        $response = $this->getJson("/api/admin/results/session/{$quizSession->id}");
 
         $response->assertStatus(200)
                 ->assertJsonCount(0);

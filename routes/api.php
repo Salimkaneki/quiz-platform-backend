@@ -395,8 +395,12 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
         Route::post('/send-to-multiple', [AdminTeacherNotificationController::class, 'sendToMultipleTeachers'])->name('send_to_multiple');
     });
 
-    // Results
-    Route::get('quiz-sessions/{quizSessionId}/results', [AdminResultController::class, 'index']);
-    Route::get('results/{id}', [AdminResultController::class, 'show']);
-    Route::get('quiz/{quizId}/results', [AdminResultController::class, 'allResultsForQuiz']);
+    // Results — préfixe 'admin/' comme le reste des routes administrateur.
+    // Sans lui, l'intercepteur axios du front n'envoyait pas l'admin_token.
+    Route::prefix('admin/results')->name('admin.results.')->group(function () {
+        Route::get('session/{quizSessionId}', [AdminResultController::class, 'index'])->name('session');
+        Route::get('session/{quizSessionId}/all', [AdminResultController::class, 'allResultsForQuiz'])->name('session.all');
+        Route::get('session/{quizSessionId}/export', [AdminResultController::class, 'export'])->name('session.export');
+        Route::get('{id}', [AdminResultController::class, 'show'])->whereNumber('id')->name('show');
+    });
 });
