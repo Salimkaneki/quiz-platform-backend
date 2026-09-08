@@ -22,7 +22,8 @@ class QuizSessionFactory extends Factory
         
         return [
             'quiz_id' => $quiz->id,
-            'teacher_id' => $quiz->teacher_id,
+            'teacher_id' => fn (array $attributes) => \App\Models\Quiz::find($attributes['quiz_id'] ?? null)?->teacher_id
+                ?? $quiz->teacher_id,
             'session_code' => strtoupper(fake()->unique()->lexify('??????')),
             'title' => $quiz->title . ' - Session ' . fake()->date('m/d'),
             'starts_at' => $startsAt,

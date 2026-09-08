@@ -26,19 +26,31 @@ class ResultFactory extends Factory
         
         $status = fake()->randomElement(['in_progress', 'submitted', 'graded', 'published']);
         
-        if ($quizSession->status === 'completed') {
-            // For completed sessions, use past dates
-            $startedAt = fake()->dateTimeBetween($quizSession->starts_at ?? '-4 hours', $quizSession->ends_at ?? '-1 hour');
-            $submittedAt = $status !== 'in_progress' ? fake()->dateTimeBetween($startedAt, $quizSession->ends_at ?? '-1 hour') : null;
-            $gradedAt = in_array($status, ['graded', 'published']) ? fake()->dateTimeBetween($submittedAt ?? $startedAt, '+1 day') : null;
-            $publishedAt = $status === 'published' ? fake()->dateTimeBetween($gradedAt ?? $submittedAt ?? $startedAt, '+1 day') : null;
-        } else {
-            // For active/future sessions
-            $startedAt = fake()->dateTimeBetween($quizSession->starts_at ?? '-1 hour', $quizSession->ends_at ?? 'now');
-            $submittedAt = $status !== 'in_progress' ? fake()->dateTimeBetween($startedAt, $quizSession->ends_at ?? 'now') : null;
-            $gradedAt = in_array($status, ['graded', 'published']) ? fake()->dateTimeBetween($submittedAt ?? $startedAt, '+1 day') : null;
-            $publishedAt = $status === 'published' ? fake()->dateTimeBetween($gradedAt ?? $submittedAt ?? $startedAt, '+1 day') : null;
-        }
+        // Les bornes issues de la session peuvent être dans le futur : on borne
+        // chaque intervalle pour garantir start <= end, sinon Faker lève
+        // "Start date must be anterior to end date".
+        $between = static function ($start, $end) {
+            $start = $start instanceof \DateTimeInterface ? $start : new \DateTime($start);
+            $end   = $end instanceof \DateTimeInterface ? $end : new \DateTime($end);
+
+            if ($start > $end) {
+                return (clone $start);
+            }
+
+            return fake()->dateTimeBetween($start, $end);
+        };
+
+        $sessionStart = $quizSession->starts_at ?? new \DateTime('-4 hours');
+        $sessionEnd   = $quizSession->ends_at ?? new \DateTime('-1 hour');
+
+        $startedAt   = $between($sessionStart, $sessionEnd);
+        $submittedAt = $status !== 'in_progress' ? $between($startedAt, $sessionEnd) : null;
+        $gradedAt    = in_array($status, ['graded', 'published'], true)
+            ? $between($submittedAt ?? $startedAt, new \DateTime('+1 day'))
+            : null;
+        $publishedAt = $status === 'published'
+            ? $between($gradedAt ?? $submittedAt ?? $startedAt, new \DateTime('+1 day'))
+            : null;
         
         return [
             'quiz_session_id' => $quizSession->id,
