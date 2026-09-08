@@ -23,7 +23,7 @@ class QuizFactory extends Factory
             'title' => fake()->sentence(4),
             'description' => fake()->paragraph(),
             'subject_id' => $subject->id,
-            'teacher_id' => $teacher->user_id,
+            'teacher_id' => $teacher->id,
             'duration_minutes' => fake()->numberBetween(15, 120),
             'total_points' => fake()->numberBetween(10, 100),
             'shuffle_questions' => fake()->boolean(30), // 30% des quiz mélangent les questions

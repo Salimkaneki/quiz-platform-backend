@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Quiz;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Traits\AuthorizationTrait;
 use App\Models\Result;
 use App\Models\StudentResponse;
 use App\Models\QuizSession; // Import ajouté
@@ -14,6 +15,8 @@ use Illuminate\Http\Request;
  */
 class ResultController extends Controller
 {
+    use AuthorizationTrait;
+
     /**
      * Liste des résultats d'une session donnée.
      *
@@ -22,10 +25,12 @@ class ResultController extends Controller
      */
     public function index($quizSessionId)
     {
+        $teacherId = $this->getAuthenticatedTeacher()->id;
+
         $results = Result::with('student')
             ->where('quiz_session_id', $quizSessionId)
-            ->whereHas('quizSession', function($query) {
-                $query->where('teacher_id', auth()->id());
+            ->whereHas('quizSession', function($query) use ($teacherId) {
+                $query->where('teacher_id', $teacherId);
             })
             ->get();
 
@@ -39,9 +44,11 @@ class ResultController extends Controller
      */
     public function getCompletedSessions(Request $request)
     {
+        $teacherId = $this->getAuthenticatedTeacher()->id;
+
         $status = $request->query('status', 'finished'); // Paramètre dynamique
         
-        $sessions = QuizSession::where('teacher_id', auth()->id())
+        $sessions = QuizSession::where('teacher_id', $teacherId)
             ->where('status', $status)
             ->with('quiz')
             ->get();
@@ -57,9 +64,11 @@ class ResultController extends Controller
      */
     public function show($id)
     {
+        $teacherId = $this->getAuthenticatedTeacher()->id;
+
         $result = Result::with('student')
-            ->whereHas('quizSession', function($query) {
-                $query->where('teacher_id', auth()->id());
+            ->whereHas('quizSession', function($query) use ($teacherId) {
+                $query->where('teacher_id', $teacherId);
             })
             ->findOrFail($id);
 
@@ -81,10 +90,12 @@ class ResultController extends Controller
      */
     public function allResultsForQuiz($quizSessionId)
     {
+        $teacherId = $this->getAuthenticatedTeacher()->id;
+
         $results = Result::with('student')
                         ->where('quiz_session_id', $quizSessionId)
-                        ->whereHas('quizSession', function($query) {
-                            $query->where('teacher_id', auth()->id());
+                        ->whereHas('quizSession', function($query) use ($teacherId) {
+                            $query->where('teacher_id', $teacherId);
                         })
                         ->get();
 
@@ -109,8 +120,10 @@ class ResultController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $result = Result::whereHas('quizSession', function($query) {
-                $query->where('teacher_id', auth()->id());
+        $teacherId = $this->getAuthenticatedTeacher()->id;
+
+        $result = Result::whereHas('quizSession', function($query) use ($teacherId) {
+                $query->where('teacher_id', $teacherId);
             })
             ->findOrFail($id);
 
@@ -138,9 +151,11 @@ class ResultController extends Controller
      */
     public function updateResponse(Request $request, $resultId, $responseId)
     {
+        $teacherId = $this->getAuthenticatedTeacher()->id;
+
         // D'abord vérifier que l'enseignant possède le résultat
-        $result = Result::whereHas('quizSession', function($query) {
-            $query->where('teacher_id', auth()->id());
+        $result = Result::whereHas('quizSession', function($query) use ($teacherId) {
+            $query->where('teacher_id', $teacherId);
         })->findOrFail($resultId);
 
         // Récupérer la réponse spécifique
@@ -169,8 +184,10 @@ class ResultController extends Controller
      */
     public function markAsGraded($id)
     {
-        $result = Result::whereHas('quizSession', function($query) {
-                $query->where('teacher_id', auth()->id());
+        $teacherId = $this->getAuthenticatedTeacher()->id;
+
+        $result = Result::whereHas('quizSession', function($query) use ($teacherId) {
+                $query->where('teacher_id', $teacherId);
             })
             ->findOrFail($id);
         $result->markAsGraded();
@@ -189,8 +206,10 @@ class ResultController extends Controller
      */
     public function publish($id)
     {
-        $result = Result::whereHas('quizSession', function($query) {
-                $query->where('teacher_id', auth()->id());
+        $teacherId = $this->getAuthenticatedTeacher()->id;
+
+        $result = Result::whereHas('quizSession', function($query) use ($teacherId) {
+                $query->where('teacher_id', $teacherId);
             })
             ->findOrFail($id);
         $result->markAsPublished();

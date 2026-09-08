@@ -36,7 +36,7 @@ class TeacherMiddlewareTest extends TestCase
         ]);
 
         // Create a quiz session for testing
-        $quiz = \App\Models\Quiz::factory()->create(['teacher_id' => $teacher->user_id]);
+        $quiz = \App\Models\Quiz::factory()->create(['teacher_id' => $teacher->id]);
         $session = \App\Models\QuizSession::factory()->create(['quiz_id' => $quiz->id]);
 
         $response = $this->actingAs($user, 'sanctum')

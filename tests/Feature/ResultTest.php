@@ -26,7 +26,7 @@ class ResultTest extends TestCase
 
         // Créer une session de quiz pour cet enseignant
         $quizSession = QuizSession::factory()->create([
-            'teacher_id' => $teacher->user_id,
+            'teacher_id' => $teacher->id,
             'status' => 'completed'
         ]);
 
@@ -73,7 +73,7 @@ class ResultTest extends TestCase
 
         // Créer une session pour le deuxième enseignant
         $quizSession = QuizSession::factory()->create([
-            'teacher_id' => $teacher2->user_id,
+            'teacher_id' => $teacher2->id,
             'status' => 'completed'
         ]);
 
@@ -108,7 +108,7 @@ class ResultTest extends TestCase
 
         // Créer une session terminée
         $quizSession = QuizSession::factory()->create([
-            'teacher_id' => $teacher->user_id,
+            'teacher_id' => $teacher->id,
             'status' => 'completed'
         ]);
 
@@ -159,7 +159,7 @@ class ResultTest extends TestCase
 
         // Créer une session
         $quizSession = QuizSession::factory()->create([
-            'teacher_id' => $teacher->user_id,
+            'teacher_id' => $teacher->id,
             'status' => 'completed'
         ]);
 
@@ -190,7 +190,7 @@ class ResultTest extends TestCase
 
         // Créer une session
         $quizSession = QuizSession::factory()->create([
-            'teacher_id' => $teacher->user_id,
+            'teacher_id' => $teacher->id,
             'status' => 'completed'
         ]);
 

@@ -42,7 +42,7 @@ class Quiz extends Model
 
     public function teacher(): BelongsTo
     {
-        return $this->belongsTo(Teacher::class, 'teacher_id', 'user_id');
+        return $this->belongsTo(Teacher::class, 'teacher_id');
     }
 
     public function questions(): HasMany

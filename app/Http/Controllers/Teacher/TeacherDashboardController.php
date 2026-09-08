@@ -38,13 +38,13 @@ class TeacherDashboardController extends Controller
         $studentsCount = Student::where('institution_id', $teacher->institution_id)->count();
 
         // Évaluations complétées (sessions terminées)
-        $completedEvaluations = QuizSession::where('teacher_id', $teacher->user_id)
+        $completedEvaluations = QuizSession::where('teacher_id', $teacher->id)
             ->where('status', 'completed')
             ->count();
 
         // Taux de réussite (moyenne des pourcentages des résultats publiés)
         $successRate = Result::whereHas('quizSession', function($query) use ($teacher) {
-            $query->where('teacher_id', $teacher->user_id);
+            $query->where('teacher_id', $teacher->id);
         })
         ->where('status', 'published')
         ->avg('percentage');

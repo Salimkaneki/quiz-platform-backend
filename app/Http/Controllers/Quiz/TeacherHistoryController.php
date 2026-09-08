@@ -81,7 +81,7 @@ class TeacherHistoryController extends Controller
 
         $results = Result::with(['quizSession.quiz.subject', 'student.user'])
             ->whereHas('quizSession', function ($query) use ($teacher) {
-                $query->where('teacher_id', $teacher->user_id);
+                $query->where('teacher_id', $teacher->id);
             })
             ->where('status', 'published')
             ->orderBy('published_at', 'desc')
@@ -116,39 +116,39 @@ class TeacherHistoryController extends Controller
 
     private function getTeacherStats($teacher)
     {
-        $userId = $teacher->user_id;
+        $teacherId = $teacher->id;
 
         // Statistiques des quiz
-        $totalQuizzes = Quiz::where('teacher_id', $userId)->count();
-        $publishedQuizzes = Quiz::where('teacher_id', $userId)->where('status', 'published')->count();
-        $draftQuizzes = Quiz::where('teacher_id', $userId)->where('status', 'draft')->count();
+        $totalQuizzes = Quiz::where('teacher_id', $teacherId)->count();
+        $publishedQuizzes = Quiz::where('teacher_id', $teacherId)->where('status', 'published')->count();
+        $draftQuizzes = Quiz::where('teacher_id', $teacherId)->where('status', 'draft')->count();
 
         // Statistiques des sessions
-        $totalSessions = QuizSession::where('teacher_id', $userId)->count();
-        $activeSessions = QuizSession::where('teacher_id', $userId)->where('status', 'active')->count();
-        $completedSessions = QuizSession::where('teacher_id', $userId)->where('status', 'completed')->count();
+        $totalSessions = QuizSession::where('teacher_id', $teacherId)->count();
+        $activeSessions = QuizSession::where('teacher_id', $teacherId)->where('status', 'active')->count();
+        $completedSessions = QuizSession::where('teacher_id', $teacherId)->where('status', 'completed')->count();
 
         // Statistiques des résultats
-        $totalResults = Result::whereHas('quizSession', function ($query) use ($userId) {
-            $query->where('teacher_id', $userId);
+        $totalResults = Result::whereHas('quizSession', function ($query) use ($teacherId) {
+            $query->where('teacher_id', $teacherId);
         })->count();
 
-        $gradedResults = Result::whereHas('quizSession', function ($query) use ($userId) {
-            $query->where('teacher_id', $userId);
+        $gradedResults = Result::whereHas('quizSession', function ($query) use ($teacherId) {
+            $query->where('teacher_id', $teacherId);
         })->where('status', 'graded')->count();
 
-        $publishedResults = Result::whereHas('quizSession', function ($query) use ($userId) {
-            $query->where('teacher_id', $userId);
+        $publishedResults = Result::whereHas('quizSession', function ($query) use ($teacherId) {
+            $query->where('teacher_id', $teacherId);
         })->where('status', 'published')->count();
 
         // Score moyen des étudiants
-        $averageScore = Result::whereHas('quizSession', function ($query) use ($userId) {
-            $query->where('teacher_id', $userId);
+        $averageScore = Result::whereHas('quizSession', function ($query) use ($teacherId) {
+            $query->where('teacher_id', $teacherId);
         })->where('status', 'published')->avg('percentage') ?? 0;
 
         // Temps total passé par les étudiants
-        $totalStudentTime = Result::whereHas('quizSession', function ($query) use ($userId) {
-            $query->where('teacher_id', $userId);
+        $totalStudentTime = Result::whereHas('quizSession', function ($query) use ($teacherId) {
+            $query->where('teacher_id', $teacherId);
         })->sum('time_spent_total');
 
         return [
@@ -177,7 +177,7 @@ class TeacherHistoryController extends Controller
     private function getQuizHistory($teacher, Request $request)
     {
         $query = Quiz::with(['subject', 'questions'])
-            ->where('teacher_id', $teacher->user_id)
+            ->where('teacher_id', $teacher->id)
             ->orderBy('created_at', 'desc');
 
         // Filtres optionnels
@@ -234,7 +234,7 @@ class TeacherHistoryController extends Controller
     private function getSessionHistory($teacher, Request $request)
     {
         $query = QuizSession::with(['quiz.subject'])
-            ->where('teacher_id', $teacher->user_id)
+            ->where('teacher_id', $teacher->id)
             ->orderBy('created_at', 'desc');
 
         // Filtres optionnels
@@ -288,7 +288,7 @@ class TeacherHistoryController extends Controller
     {
         return Result::with(['quizSession.quiz.subject', 'student.user'])
             ->whereHas('quizSession', function ($query) use ($teacher) {
-                $query->where('teacher_id', $teacher->user_id);
+                $query->where('teacher_id', $teacher->id);
             })
             ->where('status', 'published')
             ->orderBy('published_at', 'desc')
@@ -313,7 +313,7 @@ class TeacherHistoryController extends Controller
         $activities = collect();
 
         // Quiz créés récemment
-        $recentQuizzes = Quiz::where('teacher_id', $teacher->user_id)
+        $recentQuizzes = Quiz::where('teacher_id', $teacher->id)
             ->orderBy('created_at', 'desc')
             ->limit(5)
             ->get()
@@ -332,7 +332,7 @@ class TeacherHistoryController extends Controller
 
         // Sessions créées récemment
         $recentSessions = QuizSession::with('quiz')
-            ->where('teacher_id', $teacher->user_id)
+            ->where('teacher_id', $teacher->id)
             ->orderBy('created_at', 'desc')
             ->limit(5)
             ->get()
@@ -353,7 +353,7 @@ class TeacherHistoryController extends Controller
         // Résultats publiés récemment
         $recentPublishedResults = Result::with(['quizSession.quiz', 'student'])
             ->whereHas('quizSession', function ($query) use ($teacher) {
-                $query->where('teacher_id', $teacher->user_id);
+                $query->where('teacher_id', $teacher->id);
             })
             ->where('status', 'published')
             ->orderBy('published_at', 'desc')

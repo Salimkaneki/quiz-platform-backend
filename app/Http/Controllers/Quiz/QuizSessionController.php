@@ -28,7 +28,7 @@ class QuizSessionController extends Controller
             'teacher_model' => $teacher
         ]);
 
-        $query = QuizSession::where('teacher_id', $teacher->user_id)
+        $query = QuizSession::where('teacher_id', $teacher->id)
             ->with(['quiz.subject']);
 
         // Filtres optionnels
@@ -80,7 +80,7 @@ class QuizSessionController extends Controller
         $this->checkScheduleConflicts($teacher, $validated['starts_at'], $validated['ends_at']);
 
         // Vérifier les doublons
-        $exists = QuizSession::where('teacher_id', $teacher->user_id)
+        $exists = QuizSession::where('teacher_id', $teacher->id)
             ->where('title', $validated['title'])
             ->where('starts_at', $validated['starts_at'])
             ->where('ends_at', $validated['ends_at'])
@@ -93,7 +93,7 @@ class QuizSessionController extends Controller
         }
 
         $session = new QuizSession($validated);
-        $session->teacher_id = $teacher->user_id;
+        $session->teacher_id = $teacher->id;
         $session->status = 'scheduled';
         $session->generateSessionCode();
         $session->save();
@@ -174,7 +174,7 @@ class QuizSessionController extends Controller
         $this->checkScheduleConflicts($teacher, $validated['starts_at'], $validated['ends_at'], $session->id);
 
         // Vérifier les doublons sauf la session courante
-        $exists = QuizSession::where('teacher_id', $teacher->user_id)
+        $exists = QuizSession::where('teacher_id', $teacher->id)
             ->where('title', $validated['title'])
             ->where('starts_at', $validated['starts_at'])
             ->where('ends_at', $validated['ends_at'])
